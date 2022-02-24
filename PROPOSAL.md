@@ -21,6 +21,7 @@ Team
 | **Name** | **GitHub Handle** | **Email** |
 |:------:|:-------:|:------:|
 | Jeremy Weiss | jweiss0 | weissj5@rpi.edu | 
+| Eugene Rozental | eugrro | rozene@rpi.edu |
 
 Milestones
 ----------
