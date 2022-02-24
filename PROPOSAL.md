@@ -25,7 +25,7 @@ Team
 Milestones
 ----------
 - By 2/25 : Investigate game options and decide on final game mechanics. Begin work on smart contract architecture and front end design ideas.
-- By 3/4 : Complete smart contract architecture and begin writing smart contracts in **Solidity**. Decide on front end web application structure and begin development in **React**.
+- By 3/4 : Complete smart contract architecture design and begin writing smart contracts in **Solidity**. Decide on front end web application structure and begin development in **React**.
 - By 4/1: Finish writing smart contracts and coding front end web application.
 - By 4/8: Connect front end web application with backend smart contracts. Integrate blockchain wallet communication with front end.
 - By 4/15: Deploy smart contracts on **Avalanche** test network.
