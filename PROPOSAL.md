@@ -24,7 +24,7 @@ Team
 | Eugene Rozental | eugrro | rozene@rpi.edu |
 | Kevin Cruz | kevtlw | cruzck@rpi.edu |
 | Brandon Red | brandon-red | redb@rpi.edu |
-| Ben Xu |  | xub6@rpi.edu |
+| Ben Xu | x-u-b | xub6@rpi.edu |
 
 Milestones
 ----------
