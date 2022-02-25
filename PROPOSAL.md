@@ -4,17 +4,17 @@ Blockchain-based Game
 
 Overview
 --------
-This project is a web-based game, built on blockchain technology. It will utilize the blockchain to record and verify transactions that occur within the game, such as actions or task a player completes.
+This project is a web-based game, built on blockchain technology. It will utilize the blockchain to record and verify transactions that occur within the game, such as actions or task a player completes. A more detailed game description will be provided once the first milestone is complete, which involves deciding on a concrete game idea.
 
 Ultimately, we plan to use this project as a learning experience for blockchain development. The project is licensed under [GPL v3.0](https://github.com/jweiss0/OSS-Blockchain-Game/blob/main/LICENSE) to ensure it maintains an open source status and can be used by others in the community to learn blockchain development. Much of the project is not set in stone, leaving it up to the developers and community to modify the plans for the project as they see fit.
 
 Semester Plan
 -------------
-Our goal this semester is to develop a completely functional web-based game, built on the blockchain. Creating a multiplayer game will be a difficult task for a single semester, so we plan to make the game singleplayer. We will concentrate on simple functionality, regarding both smart contracts and the front end web application. We would prefer a working application with simple features over a nonfunctional application with many features. Although the game will be singleplayer, there will be a leaderboard to display scores of different users.
+Our goal this semester is to develop a completely functional web-based game, built on the blockchain. Creating a multiplayer game will be a difficult task for a single semester, so we plan to make the game singleplayer. We will concentrate on simple functionality, regarding both smart contracts and the front end web application. We would prefer a working application with simple features over a nonfunctional application with many features. Although the game will be singleplayer, there may be a leaderboard to display scores of different users. We plan to spend the first week deciding on the type of game to create and the necessary mechanics. The week after that, we will work on documentation regarding smart contract architecture design, as well as front end design documentation. After that, for the next few weeks, we will complete the smart contracts and front end web application. That leaves the last few weeks of the semester to connect the front end web application with the smart contracts, deploy the smart contracts and web application, and finally begin writing tests for the application.
 
 Technology
 ----------
-We will be using **React** with _Redux_ and the _web3.js_ library for coding the front end of the application and **Solidity** for coding the smart contracts. Smart contract development, testing, and deployment will be performed with the **Hardhat** environment. We plan to deploy the smart contracts to the **Avalanche** network.
+We will be using **React** with _Redux_ (subject to change) and the _web3.js_ library for coding the front end of the application and **Solidity** for coding the smart contracts. Smart contract development, testing, and deployment will be performed with the **Hardhat** environment. We plan to deploy the smart contracts to the **Avalanche** (subject to change) network.
 
 Team
 ----
@@ -24,6 +24,7 @@ Team
 | Eugene Rozental | eugrro | rozene@rpi.edu |
 | Kevin Cruz | kevtlw | cruzck@rpi.edu |
 | Brandon Red | brandon-red | redb@rpi.edu |
+| Ben Xu |  | xub6@rpi.edu |
 
 Milestones
 ----------
