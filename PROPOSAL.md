@@ -14,7 +14,7 @@ Our goal this semester is to develop a completely functional web-based game, bui
 
 Technology
 ----------
-We will be using **React** with _Redux_ for coding the front end of the application and **Solidity** for coding the smart contracts. Smart contract development, testing, and deployment will be performed with the **Hardhat** environment. We plan to deploy the smart contracts to the **Avalanche** network.
+We will be using **React** with _Redux_ and the _web3.js_ library for coding the front end of the application and **Solidity** for coding the smart contracts. Smart contract development, testing, and deployment will be performed with the **Hardhat** environment. We plan to deploy the smart contracts to the **Avalanche** network.
 
 Team
 ----
@@ -26,7 +26,7 @@ Team
 
 Milestones
 ----------
-- By 2/25 : Investigate game options and decide on final game mechanics. Begin work on smart contract architecture and front end design ideas.
+- By 2/27 : Investigate game options and decide on final game mechanics. Begin work on smart contract architecture and front end design ideas.
 - By 3/4 : Complete smart contract architecture design and begin writing smart contracts in **Solidity**. Decide on front end web application structure and begin development in **React**.
 - By 4/1: Finish writing smart contracts and coding front end web application.
 - By 4/8: Connect front end web application with backend smart contracts. Integrate blockchain wallet communication with front end.
