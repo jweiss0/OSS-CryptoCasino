@@ -23,6 +23,7 @@ Team
 | Jeremy Weiss | jweiss0 | weissj5@rpi.edu | 
 | Eugene Rozental | eugrro | rozene@rpi.edu |
 | Kevin Cruz | kevtlw | cruzck@rpi.edu |
+| Brandon Red | brandon-red | redb@rpi.edu |
 
 Milestones
 ----------
