@@ -1,12 +1,12 @@
-Blockchain-based Game
+Crypto Casino
 ===========
-[https://github.com/jweiss0/OSS-Blockchain-Game](https://github.com/jweiss0/OSS-Blockchain-Game)
+[https://github.com/jweiss0/OSS-CryptoCasino](https://github.com/jweiss0/OSS-CryptoCasino)
 
 Overview
 --------
-This project is a web-based game, built on blockchain technology. It will utilize the blockchain to record and verify transactions that occur within the game, such as actions or task a player completes. A more detailed game description will be provided once the first milestone is complete, which involves deciding on a concrete game idea. The project name will also change once this is decided.
+This project is a web-based game, built on blockchain technology. It will utilize the blockchain to record and verify transactions that occur within the game, such as actions or task a player completes. Crypto Casino is a collection of casino games that will be played on a front end web application, with transactions recorded on the blockchain. This includes games such as blackjack, roulette, and slots.
 
-Ultimately, we plan to use this project as a learning experience for blockchain development. The project is licensed under [GPL v3.0](https://github.com/jweiss0/OSS-Blockchain-Game/blob/main/LICENSE) to ensure it maintains an open source status and can be used by others in the community to learn blockchain development. Much of the project is not set in stone, leaving it up to the developers and community to modify the plans for the project as they see fit.
+Ultimately, we plan to use this project as a learning experience for blockchain development. The project is licensed under [GPL v3.0](https://github.com/jweiss0/OSS-CryptoCasino/blob/main/LICENSE) to ensure it maintains an open source status and can be used by others in the community to learn blockchain development. Much of the project is not set in stone, leaving it up to the developers and community to modify the plans for the project as they see fit.
 
 Semester Plan
 -------------
