@@ -9,11 +9,33 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 *  or monetary value to the Chip token.
 */
 contract Chip is ERC20, Ownable {
+
+    // State variables
+    address private casinoAddress;
+
+    // Constructor mints 1000 for deploying wallet
     constructor() ERC20("Chip", "OSSC") {
         _mint(msg.sender, 100 * 10 ** decimals());
     }
 
+    // Modifier to check if the calling address is the Casino contract address
+    modifier onlyCasino {
+        require(msg.sender == casinoAddress, "Caller address is not the Casino contract address");
+        _;
+    }
+
+    // Minting function available only to the deploying address
     function mint(address to, uint256 amount) public onlyOwner {
         _mint(to, amount);
+    }
+
+    // Minting function available only to the Casino contract address
+    function casinoMint(address to, uint256 amount) public onlyCasino {
+        _mint(to, amount);
+    }
+
+    // Set the address of the Casino contract
+    function setCasinoAddress(address _addr) external onlyOwner {
+        casinoAddress = _addr;
     }
 }
