@@ -20,7 +20,7 @@ contract Chip is ERC20, Ownable {
 
     // Modifier to check if the calling address is the Casino contract address
     modifier onlyCasino {
-        require(msg.sender == casinoAddress, "Caller address is not the Casino contract address");
+        require(msg.sender == casinoAddress, "Caller must be Casino contract.");
         _;
     }
 
