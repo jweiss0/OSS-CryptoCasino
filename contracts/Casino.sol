@@ -2,7 +2,6 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./Chip.sol";
 
 contract ChipInterface {
     function casinoMint(address to, uint256 amount) public;
@@ -17,7 +16,14 @@ contract Casino is Ownable {
 
     // State variables
     ChipInterface private chipContract;
-    mapping (address => bool) internal freeTokensClaimed;
+    address private casinoGameAddress;
+    mapping (address => bool) private freeTokensClaimed;
+
+    // Modifier to check if the calling address is the CasinoGame contract address
+    modifier onlyCasinoGame {
+        require(msg.sender == casinoGameAddress, "Caller must be CasinoGame.");
+        _;
+    }
 
     // Sets the address of the Chip utility token contract
     function setChipContractAddress(address _address) external onlyOwner {
@@ -32,5 +38,11 @@ contract Casino is Ownable {
         chipContract.casinoMint(msg.sender, 10 * 10 ** decimals());
         // Mark the user's first time chips as claimed
         freeTokensClaimed[msg.sender] = true;
+    }
+
+    // Pays a certain amount of winnings to the specified contract. If the Casino
+    // contract does not have enough Chips, 1000 more are minted for the Casino.
+    function payWinnings(address to, uint256 amount) public onlyCasinoGame {
+
     }
 }
