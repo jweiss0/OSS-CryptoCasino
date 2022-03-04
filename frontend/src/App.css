@@ -3,3 +3,60 @@
 .brand {
   font-family: "Righteous", cursive;
 }
+
+.landing-page-container > div:nth-child(1) {
+  width: 100%;
+}
+
+.landing-page-container > div:nth-child(2) {
+  width: 100%;
+  text-align: center;
+}
+
+.landing-page-image-container {
+  width: 18rem;
+  margin: 0 auto;
+}
+
+.landing-page-image {
+  width: 100%;
+}
+
+.landing-page-subtitle {
+  font-family: sans-serif;
+}
+
+/* sm */
+@media (min-width: 576px) {
+  .landing-page-image-container {
+    width: 24rem;
+  }
+}
+
+/* md */
+@media (min-width: 768px) {
+}
+
+/* lg */
+@media (min-width: 992px) {
+  .landing-page-container > div:nth-child(1) {
+    order: 2;
+    width: 50%;
+  }
+
+  .landing-page-container > div:nth-child(2) {
+    width: 50%;
+    text-align: left;
+  }
+
+  .landing-page-image-container {
+    width: 30rem;
+  }
+}
+
+/* xl */
+@media (min-width: 1200px) {
+  .landing-page-image-container {
+    width: 35rem;
+  }
+}
