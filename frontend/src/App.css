@@ -1,38 +1,62 @@
-.App {
+@import url("https://fonts.googleapis.com/css2?family=Righteous&display=swap");
+
+.brand {
+  font-family: "Righteous", cursive;
+}
+
+.landing-page-container > div:nth-child(1) {
+  width: 100%;
+}
+
+.landing-page-container > div:nth-child(2) {
+  width: 100%;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.landing-page-image-container {
+  width: 18rem;
+  margin: 0 auto;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+.landing-page-image {
+  width: 100%;
+}
+
+.landing-page-subtitle {
+  font-family: sans-serif;
+}
+
+/* sm */
+@media (min-width: 576px) {
+  .landing-page-image-container {
+    width: 24rem;
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+/* md */
+@media (min-width: 768px) {
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+/* lg */
+@media (min-width: 992px) {
+  .landing-page-container > div:nth-child(1) {
+    order: 2;
+    width: 50%;
   }
-  to {
-    transform: rotate(360deg);
+
+  .landing-page-container > div:nth-child(2) {
+    width: 50%;
+    text-align: left;
+  }
+
+  .landing-page-image-container {
+    width: 30rem;
+  }
+}
+
+/* xl */
+@media (min-width: 1200px) {
+  .landing-page-image-container {
+    width: 35rem;
   }
 }
