@@ -33,12 +33,12 @@ contract Blackjack is CasinoGame {
     // Handles the initial start of a blackjack round. It creates a new BlackjackGame with
     // a new player and dealer. It also sets the isPlayingRound and gameInProgress attributes
     // to true. Lastly, it handles the initial dealing of cards to the player and the dealer.
-    function playRound() public {
+    function playRound(uint256 _betAmount) public {
         // Only start the round if player is not in the middle of a game or an existing round.
         // Check that the paid bet is large enough.
         require(gameinProgress[msg.sender] == false, "Already playing game.");
         require(isPlayingRound[msg.sender] == false, "Already playing round.");
-        require(totalBet >= minimumBet, "Bet is too small.");
+        require(_betAmount >= minimumBet, "Bet is too small.");
 
         //  Initialize new game round
         BlackjackPlayer memory player;
