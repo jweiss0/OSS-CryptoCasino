@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="style.css">
+        <title>BlackJack Prototype</title>
+        
+    </head>
+    <body>
+        <h1>CryptoCasino: Blackjack</h1>
+        <div class="container">
+            <div id="dealerHand" class="hand">
+                <p>Dealer's Hand:</p>
+                <span id="dealerScore"></span>
+            </div>
+        </div>
+        <div id="playersTurn" style="text-align:center">
+            <button id="hitButton" class="btn" onclick="playerTurn('hit')">HIT</button>
+            <button id="standButton" class="btn" onclick="playerTurn('stand')">STAND</button>
+        </div>
+        <div class="container">
+            <div id="playerHand" class="hand">
+                <p>Your Hand:</p>
+                <span id="playerScore"></span>
+            </div>
+        </div>
+        <div id="results" class="container" style="text-align: center;">
+            <p>Results: </p>
+        </div>
+        <div class="center">
+            <button id="playAgain" class="btn" onclick="restart()">Play Again</button>
+        </div>
+        <script src="./blackjack.js"></script>
+    </body>
+</html>
