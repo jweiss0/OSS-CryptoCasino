@@ -1,7 +1,13 @@
 // SPDX-License-Identifier: GPL v3.0
 pragma solidity ^0.8.4;
 
+import "./provableAPI.sol";
 import "./CasinoGame.sol";
+
+struct Card {
+    string value;
+    string suit;
+}
 
 struct BlackjackPlayer {
     uint256 totalBet;
@@ -24,6 +30,8 @@ contract Blackjack is CasinoGame {
     // State variables
     mapping (address => bool) private isPlayingRound;
     mapping (address => BlackjackGame) private bjGames;
+    uint16[13] private cardValues = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+    string[4] private cardSuits = ["Spades", "Clubs", "Hearts", "Diamonds"];
 
     // Sets the value of isPlayingRound to true or false for a player
     function setIsPlayingRound(address _address, bool _isPlaying) internal {
@@ -97,6 +105,8 @@ contract Blackjack is CasinoGame {
     // Handles selecting and dealing a single card to the specified player.
     function dealSingleCard(BlackjackGame storage _game, BlackjackPlayer _player) private {
         require(isPlayingRound[msg.sender] == true, "Not playing round.");
+
+        // Use some sort of random function to select a card and suit from the deck
     }
 
     // Resets a BlackjackGame and all the internal attributes.
@@ -113,5 +123,35 @@ contract Blackjack is CasinoGame {
         _game.dealer.isBust = false;
         _game.dealer.isBlackjack = false;
         delete _game.dealer.cards;
+    }
+
+    // Returns the value of a card. Returns 0 for Ace. Returns -1 if 
+    // _card is uninitialized.
+    function getCardValue(Card _card) public view returns (uint16) {
+        if(bytes(_card).length > 0) {
+            if(isAlphaUpper(_card.value)) {
+                if(keccak256(abi.encodePacked((_card.value))) == keccak256(abi.encodePacked(("A"))))
+                    return 0;
+                else
+                    return 10;
+            } else {
+                uint16 res = safeParseInt(_card.value);
+                return res;
+            }
+        }
+        return -1;
+    }
+
+    // Returns true if a string contains only uppercase alphabetic characters
+    function isAlphaUpper(string memory _str) public view returns (bool) {
+        bytes memory b = bytes(_str);
+
+        for(uint i; i< b .length; i++){
+            bytes1 char = b[i];
+
+            if(!(char >= 0x41 && char <= 0x5A))
+                return false;
+        }
+        return true;
     }
 }
