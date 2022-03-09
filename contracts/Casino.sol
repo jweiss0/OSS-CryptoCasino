@@ -36,7 +36,7 @@ contract Casino is Ownable {
         // Check that the user has not already claimed their free tokens
         require(freeTokensClaimed[msg.sender] == false, "Already claimed free tokens.");
         // Mint the tokens for the user using the Casino contract function
-        chipContract.casinoMint(msg.sender, 10 * 10 ** decimals());
+        chipContract.casinoMint(msg.sender, 10);
         // Mark the user's first time chips as claimed
         freeTokensClaimed[msg.sender] = true;
     }

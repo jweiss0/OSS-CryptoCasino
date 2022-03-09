@@ -18,10 +18,15 @@ contract CasinoGame is Ownable {
     CasinoInterface private casinoContract;
     uint256 internal minimumBet;
     uint256 internal maxBet;
-    mapping (address => bool) private gameInProgress;
+    mapping (address => bool) internal gameInProgress;
 
     // Sets the address of the Casino contract
     function setCasinoContractAddress(address _address) external onlyOwner {
         casinoContract = CasinoInterface(_address);
+    }
+
+    // Sets the value of gameInProgress to true or false for a player
+    function setGameInProgress(address _address, bool _isPlaying) internal {
+        gameInProgress[_address] = _isPlaying;
     }
 }
