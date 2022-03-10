@@ -2,10 +2,9 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./Casino.sol";
 
-contract CasinoInterface {
-    function payWinnings(address to, uint256 amount) public;
+interface CasinoInterface {
+    function payWinnings(address to, uint256 amount) external;
 }
 
 /* The CasinoGame contract defines top-level state variables

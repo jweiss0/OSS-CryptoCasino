@@ -2,10 +2,9 @@
 pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./Chip.sol";
 
-contract ChipInterface {
-    function casinoMint(address to, uint256 amount) public;
+interface ChipInterface {
+    function casinoMint(address to, uint256 amount) external;
 }
 
 /* The Casino contract defines top-level Casino-related transactions that occur
@@ -43,7 +42,7 @@ contract Casino is Ownable {
 
     // Pays a certain amount of winnings to the specified contract. If the Casino
     // contract does not have enough Chips, 1000 more are minted for the Casino.
-    function payWinnings(address to, uint256 amount) public onlyCasinoGame {
+    function payWinnings(address to, uint256 amount) external onlyCasinoGame {
 
     }
 }

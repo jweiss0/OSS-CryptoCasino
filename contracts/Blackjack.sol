@@ -10,8 +10,8 @@ struct Card {
 
 struct BlackjackPlayer {
     uint256 totalBet;
-    uint16[] cards;
-    string[] cardSuits;
+    string[] cards;
+    string[] suits;
     bool isBust;
     bool isBlackjack;
 }
@@ -34,8 +34,8 @@ contract Blackjack is CasinoGame {
 
     // Events (to be emitted)
     event NewRound(address player, uint256 initialBet);
-    event PlayerCardsUpdated(address player, uint16[] cardVals, string[] cardSuits);
-    event DealerCardsUpdated(address player, uint16[] cardVals, string[] cardSuits);
+    event PlayerCardsUpdated(address player, string[] cardVals, string[] cardSuits);
+    event DealerCardsUpdated(address player, string[] cardVals, string[] cardSuits);
     event PlayerBetUpdated(address player, uint256 newBet);
 
     // Sets the value of isPlayingRound to true or false for a player
@@ -92,30 +92,39 @@ contract Blackjack is CasinoGame {
         emit DealerCardsUpdated(msg.sender, game.dealer.cards, game.dealer.suits);
     }
 
-    // Handles splitting cards from a hand.
-    function split() public {
+    // Handles splitting cards from a player's hand.
+    function splitPlayer() public {
         require(isPlayingRound[msg.sender] == true, "Not playing round.");
 
-        emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].cards, bjGames[msg.sender].suits);
+        emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.cards, bjGames[msg.sender].player.suits);
     }
 
     // Handles doubling down on a hand.
     function doubleDown() public {
         require(isPlayingRound[msg.sender] == true, "Not playing round.");
 
-        emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].cards, bjGames[msg.sender].suits);
+        emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.cards, bjGames[msg.sender].player.suits);
     }
 
     // Handles dealing another card to the player.
-    function hit() public {
+    function hitPlayer() public {
         require(isPlayingRound[msg.sender] == true, "Not playing round.");
 
-        emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].cards, bjGames[msg.sender].suits);
+        emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.cards, bjGames[msg.sender].player.suits);
     }
 
     // Handles finishing a player's turn.
-    function stand() public {
+    function standPlayer() public {
         require(isPlayingRound[msg.sender] == true, "Not playing round.");
+    }
+
+    // Handles dealing another card to the dealer.
+    function hitDealer() public {
+        emit DealerCardsUpdated(msg.sender, bjGames[msg.sender].dealer.cards, bjGames[msg.sender].dealer.suits);
+    }
+
+    // Handles finishing a dealer's turn.
+    function standDealer() public {
     }
 
     // Handles selecting and dealing a single card to the specified player.
@@ -129,35 +138,31 @@ contract Blackjack is CasinoGame {
     function resetBJGame(BlackjackGame storage _game) internal {
         // Reset player attributes
         _game.player.totalBet = 0;
-        _game.player.handValue = 0;
         _game.player.isBust = false;
         _game.player.isBlackjack = false;
         delete _game.player.cards;
-        delete _game.player.cardSuits;
+        delete _game.player.suits;
 
         // Reset dealer attributes
-        _game.dealer.handValue = 0;
         _game.dealer.isBust = false;
         _game.dealer.isBlackjack = false;
         delete _game.dealer.cards;
-        delete _game.dealer.cardSuits;
+        delete _game.dealer.suits;
     }
 
-    // Returns the value of a card. Returns 0 for Ace. Returns -1 if 
+    // Returns the value of a card. Returns 0 for Ace. Returns type(uint16).max if 
     // _card is uninitialized.
     function getCardValue(Card memory _card) public view returns (uint16) {
-        if(bytes(_card).length > 0) {
+        if(bytes(_card.value).length == 0 || bytes(_card.suit).length == 0) {
             if(isAlphaUpper(_card.value)) {
                 if(keccak256(abi.encodePacked((_card.value))) == keccak256(abi.encodePacked(("A"))))
                     return 0;
                 else
                     return 10;
-            } else {
-                uint16 res = safeParseInt(_card.value);
-                return res;
-            }
+            } else
+                return uint16(safeParseInt(_card.value));
         }
-        return -1;
+        return type(uint16).max;
     }
 
     // Returns true if a string contains only uppercase alphabetic characters
