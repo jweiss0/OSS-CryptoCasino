@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: GPL v3.0
 pragma solidity ^0.8.4;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./CasinoGame.sol";
-
-struct Card {
-    string value;
-    string suit;
-}
 
 struct BlackjackPlayer {
     uint256 totalBet;
-    string[] cards;
-    string[] suits;
     bool isBust;
     bool isBlackjack;
+    /* Use separate string arrays instead of Card struct to resolve
+    * "Copying of type struct memory[] memory to storage not yet supported" errors
+    */
+    string[] cVals;
+    string[] cSuits;
 }
 
 struct BlackjackGame {
@@ -24,19 +23,26 @@ struct BlackjackGame {
 /* The Blackjack contract defines specific state variables
 *  and functions for a user to play Blackjack at the Casino.
 */
-contract Blackjack is CasinoGame {
+contract Blackjack is Ownable, CasinoGame {
 
     // State variables
     mapping (address => bool) private isPlayingRound;
     mapping (address => BlackjackGame) private bjGames;
-    string[13] private cardValues = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
-    string[4] private cardSuits = ["Spades", "Clubs", "Hearts", "Diamonds"];
+    string[13] private cardValues = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
+    string[4] private cardSuits = ["Diamonds", "Clubs", "Hearts", "Spades"];
+    uint8 private numDecks = 4;
 
     // Events (to be emitted)
     event NewRound(address player, uint256 initialBet);
     event PlayerCardsUpdated(address player, string[] cardVals, string[] cardSuits);
     event DealerCardsUpdated(address player, string[] cardVals, string[] cardSuits);
     event PlayerBetUpdated(address player, uint256 newBet);
+
+    // Updates the value of numDecks, the number of decks to play with
+    function setNumDecks(uint8 _decks) public onlyOwner {
+        require(_decks > 0, "At least one deck required.");
+        numDecks = _decks;
+    }
 
     // Sets the value of isPlayingRound to true or false for a player
     function setIsPlayingRound(address _address, bool _isPlaying) internal {
@@ -46,26 +52,26 @@ contract Blackjack is CasinoGame {
     // Handles the initial start of a blackjack round. It creates a new BlackjackGame with
     // a new player and dealer. It also sets the isPlayingRound and gameInProgress attributes
     // to true. Lastly, it handles the initial dealing of cards to the player and the dealer.
-    function playRound(uint256 _betAmount) public {
+    function playRound(uint256 _betAmount, address _playerAddress) public {
         // Only start the round if player is not in the middle of a game or an existing round.
         // Check that the paid bet is large enough.
-        require(gameInProgress[msg.sender] == false, "Already playing game.");
-        require(isPlayingRound[msg.sender] == false, "Already playing round.");
+        require(gameInProgress[_playerAddress] == false, "Already playing game.");
+        require(isPlayingRound[_playerAddress] == false, "Already playing round.");
         require(_betAmount >= minimumBet, "Bet is too small.");
 
         //  Initialize new game round
         BlackjackPlayer memory player;
         BlackjackPlayer memory dealer;
-        bjGames[msg.sender] = BlackjackGame(player, dealer);
-        bjGames[msg.sender].player.totalBet = _betAmount;
-        setIsPlayingRound(msg.sender, true);
-        setGameInProgress(msg.sender, true);
+        bjGames[_playerAddress] = BlackjackGame(player, dealer);
+        bjGames[_playerAddress].player.totalBet = _betAmount;
+        setIsPlayingRound(_playerAddress, true);
+        setGameInProgress(_playerAddress, true);
 
         // Let front end know a new round has begun
         emit NewRound(msg.sender, _betAmount);
 
         // Handle initial dealing of cards
-        deal();
+        deal(_playerAddress);
     }
 
     // Handles the end of a blackjack round. It sets the isPlayingRound and gameInProgress
@@ -79,38 +85,38 @@ contract Blackjack is CasinoGame {
     }
 
     // Handles the first deal of cards to player and dealer.
-    function deal() internal {
-        require(isPlayingRound[msg.sender] == true, "Not playing round.");
-        BlackjackGame storage game = bjGames[msg.sender];
+    function deal(address _address) internal {
+        require(isPlayingRound[_address] == true, "Not playing round.");
+        BlackjackGame storage game = bjGames[_address];
         dealSingleCard(game, game.player);
         dealSingleCard(game, game.dealer);
         dealSingleCard(game, game.player);
         dealSingleCard(game, game.dealer);
 
         // Let front end know the player and dealer hands
-        emit PlayerCardsUpdated(msg.sender, game.player.cards, game.player.suits);
-        emit DealerCardsUpdated(msg.sender, game.dealer.cards, game.dealer.suits);
+        emit PlayerCardsUpdated(msg.sender, game.player.cVals, game.player.cSuits);
+        emit DealerCardsUpdated(msg.sender, game.dealer.cVals, game.dealer.cSuits);
     }
 
     // Handles splitting cards from a player's hand.
     function splitPlayer() public {
         require(isPlayingRound[msg.sender] == true, "Not playing round.");
 
-        emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.cards, bjGames[msg.sender].player.suits);
+        emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.cVals, bjGames[msg.sender].player.cSuits);
     }
 
     // Handles doubling down on a hand.
     function doubleDown() public {
         require(isPlayingRound[msg.sender] == true, "Not playing round.");
 
-        emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.cards, bjGames[msg.sender].player.suits);
+        emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.cVals, bjGames[msg.sender].player.cSuits);
     }
 
     // Handles dealing another card to the player.
     function hitPlayer() public {
         require(isPlayingRound[msg.sender] == true, "Not playing round.");
 
-        emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.cards, bjGames[msg.sender].player.suits);
+        emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.cVals, bjGames[msg.sender].player.cSuits);
     }
 
     // Handles finishing a player's turn.
@@ -120,7 +126,7 @@ contract Blackjack is CasinoGame {
 
     // Handles dealing another card to the dealer.
     function hitDealer() public {
-        emit DealerCardsUpdated(msg.sender, bjGames[msg.sender].dealer.cards, bjGames[msg.sender].dealer.suits);
+        emit DealerCardsUpdated(msg.sender, bjGames[msg.sender].dealer.cVals, bjGames[msg.sender].dealer.cSuits);
     }
 
     // Handles finishing a dealer's turn.
@@ -131,7 +137,22 @@ contract Blackjack is CasinoGame {
     function dealSingleCard(BlackjackGame storage _game, BlackjackPlayer storage _player) private {
         require(isPlayingRound[msg.sender] == true, "Not playing round.");
 
-        // Use some sort of random function to select a card and suit from the deck
+        bool validCard = false;
+        string memory cv;
+        string memory cs;
+
+        while(!validCard) {
+            // Select random card value from deck
+            cv = cardValues[rand(cardValues.length)];
+            // Select random suit from deck
+            cs = cardSuits[rand(cardSuits.length)];
+            // Verify card selection is valid
+            // validCard = cardLeftInDeck(_game, cv, cs);
+        }
+
+        // Update value and suit, then add to player's cards
+        _player.cVals.push(cv);
+        _player.cSuits.push(cs);
     }
 
     // Resets a BlackjackGame and all the internal attributes.
@@ -140,33 +161,33 @@ contract Blackjack is CasinoGame {
         _game.player.totalBet = 0;
         _game.player.isBust = false;
         _game.player.isBlackjack = false;
-        delete _game.player.cards;
-        delete _game.player.suits;
+        delete _game.player.cVals;
+        delete _game.player.cSuits;
 
         // Reset dealer attributes
         _game.dealer.isBust = false;
         _game.dealer.isBlackjack = false;
-        delete _game.dealer.cards;
-        delete _game.dealer.suits;
+        delete _game.dealer.cVals;
+        delete _game.dealer.cSuits;
     }
 
-    // Returns the value of a card. Returns 0 for Ace. Returns type(uint16).max if 
+    // Returns the integer value of a card. Returns 0 for Ace. Returns type(uint16).max if 
     // _card is uninitialized.
-    function getCardValue(Card memory _card) public view returns (uint16) {
-        if(bytes(_card.value).length == 0 || bytes(_card.suit).length == 0) {
-            if(isAlphaUpper(_card.value)) {
-                if(keccak256(abi.encodePacked((_card.value))) == keccak256(abi.encodePacked(("A"))))
+    function getCardValue(string memory _value) public pure returns (uint16) {
+        if(bytes(_value).length == 0) {
+            if(isAlphaUpper(_value)) {
+                if(keccak256(abi.encodePacked((_value))) == keccak256(abi.encodePacked(("A"))))
                     return 0;
                 else
                     return 10;
             } else
-                return uint16(safeParseInt(_card.value));
+                return uint16(safeParseInt(_value));
         }
         return type(uint16).max;
     }
 
     // Returns true if a string contains only uppercase alphabetic characters
-    function isAlphaUpper(string memory _str) public view returns (bool) {
+    function isAlphaUpper(string memory _str) public pure returns (bool) {
         bytes memory b = bytes(_str);
 
         for(uint i; i< b .length; i++){
@@ -177,6 +198,21 @@ contract Blackjack is CasinoGame {
         }
         return true;
     }
+
+    // Generates a random number, 0 to _upper (non-inclusive), to be used for card selection.
+    // Not truly random, but good enough for the needs of this project.
+    // A mainnet application should use something like Chainlink VRF for this task instead.
+    function rand(uint256 _upper) public view returns(uint256) {
+    uint256 seed = uint256(keccak256(abi.encodePacked(
+        block.timestamp + block.difficulty +
+        ((uint256(keccak256(abi.encodePacked(block.coinbase)))) / (block.timestamp)) +
+        block.gaslimit + 
+        ((uint256(keccak256(abi.encodePacked(msg.sender)))) / (block.timestamp)) +
+        block.number
+    )));
+
+    return (seed - ((seed / _upper) * _upper));
+}
 
     /*
     Copyright (c) 2015-2016 Oraclize SRL
@@ -215,10 +251,10 @@ contract Blackjack is CasinoGame {
                 mint *= 10;
                 mint += uint(uint8(bresult[i])) - 48;
             } else if (uint(uint8(bresult[i])) == 46) {
-                require(!decimals, 'More than one decimal encountered in string!');
+                require(!decimals, "More than one decimal found!");
                 decimals = true;
             } else {
-                revert("Non-numeral character encountered in string!");
+                revert("Non-numeral character found!");
             }
         }
         if (_b > 0) {
