@@ -30,8 +30,8 @@ contract Chip is ERC20, Ownable {
     }
 
     // Minting function available only to the Casino contract address
-    function casinoMint(address to, uint256 amount) public onlyCasino {
-        _mint(to, amount);
+    function casinoMint(address to, uint256 amount) external onlyCasino {
+        _mint(to, amount * 10 ** decimals());
     }
 
     // Set the address of the Casino contract

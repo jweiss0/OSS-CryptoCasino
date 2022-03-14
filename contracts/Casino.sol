@@ -3,8 +3,8 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract ChipInterface {
-    function casinoMint(address to, uint256 amount) public;
+interface ChipInterface {
+    function casinoMint(address to, uint256 amount) external;
 }
 
 /* The Casino contract defines top-level Casino-related transactions that occur
@@ -35,14 +35,14 @@ contract Casino is Ownable {
         // Check that the user has not already claimed their free tokens
         require(freeTokensClaimed[msg.sender] == false, "Already claimed free tokens.");
         // Mint the tokens for the user using the Casino contract function
-        chipContract.casinoMint(msg.sender, 10 * 10 ** decimals());
+        chipContract.casinoMint(msg.sender, 10);
         // Mark the user's first time chips as claimed
         freeTokensClaimed[msg.sender] = true;
     }
 
     // Pays a certain amount of winnings to the specified contract. If the Casino
     // contract does not have enough Chips, 1000 more are minted for the Casino.
-    function payWinnings(address to, uint256 amount) public onlyCasinoGame {
+    function payWinnings(address to, uint256 amount) external onlyCasinoGame {
 
     }
 }
