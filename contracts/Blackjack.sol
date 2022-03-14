@@ -138,6 +138,7 @@ contract Blackjack is Ownable, CasinoGame {
         require(isPlayingRound[msg.sender] == true, "Not playing round.");
 
         bool validCard = false;
+        uint tries = 0;
         string memory cv;
         string memory cs;
 
@@ -147,12 +148,19 @@ contract Blackjack is Ownable, CasinoGame {
             // Select random suit from deck
             cs = cardSuits[rand(cardSuits.length)];
             // Verify card selection is valid
-            // validCard = cardLeftInDeck(_game, cv, cs);
+            validCard = cardLeftInDeck(_game, cv, cs);
+
+            // With a single player, all cards in the deck should never be dealt.
+            // However, just in case, break out of the loop if all cards have been dealt.
+            tries++;
+            require(tries <= numDecks*52, "No cards left to deal.");
         }
 
         // Update value and suit, then add to player's cards
         _player.cVals.push(cv);
         _player.cSuits.push(cs);
+
+        require(_player.cVals.length == _player.cSuits.length, "Error dealing card.");
     }
 
     // Resets a BlackjackGame and all the internal attributes.
@@ -184,6 +192,26 @@ contract Blackjack is Ownable, CasinoGame {
                 return uint16(safeParseInt(_value));
         }
         return type(uint16).max;
+    }
+
+    // Checks if a card has not yet been dealt in the provided game. Returns true if it has
+    // not yet been dealt, otherwise false.
+    function cardLeftInDeck(BlackjackGame storage _game, string memory _cardVal, string memory _cardSuit) internal view returns (bool) {
+        uint8 occurrences = 0;
+        // Check player cards
+        for (uint i = 0; i < _game.player.cVals.length; i++) {
+            if(keccak256(abi.encodePacked((_game.player.cVals[i]))) == keccak256(abi.encodePacked((_cardVal))) && 
+                keccak256(abi.encodePacked((_game.player.cSuits[i]))) == keccak256(abi.encodePacked((_cardSuit))))
+                occurrences++;
+        }
+        // Check dealer cards
+        for (uint i = 0; i < _game.dealer.cVals.length; i++) {
+            if(keccak256(abi.encodePacked((_game.dealer.cVals[i]))) == keccak256(abi.encodePacked((_cardVal))) && 
+                keccak256(abi.encodePacked((_game.dealer.cSuits[i]))) == keccak256(abi.encodePacked((_cardSuit))))
+                occurrences++;
+        }
+
+        return occurrences < numDecks;
     }
 
     // Returns true if a string contains only uppercase alphabetic characters
