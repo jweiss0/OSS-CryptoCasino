@@ -10,6 +10,7 @@ interface CasinoInterface {
 interface ChipInterface {
     function casinoGameBalanceOf(address _owner) external view returns (uint256 balance);
     function casinoGameTransfer(address _to, uint256 _value) external returns (bool success);
+    function casinoGameApprove(address _spender, uint256 _value) external returns (bool success);
 }
 
 /* The CasinoGame contract defines top-level state variables
