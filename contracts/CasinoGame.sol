@@ -16,11 +16,53 @@ contract CasinoGame is Ownable {
     // State variables
     CasinoInterface private casinoContract;
     uint256 internal minimumBet;
-    uint256 internal totalBet;
     mapping (address => bool) private gameInProgress;
+    mapping (address => uint256) internal totalBet;
 
-    // Sets the address of the Casino contract
+    // Events (to be emitted)
+    event ContractPaid(address player, uint256 amount);
+    event RewardPaid(address player, uint256 amount);
+
+    // Sets the address of the Casino contract.
     function setCasinoContractAddress(address _address) external onlyOwner {
         casinoContract = CasinoInterface(_address);
+    }
+
+    // Sets the minimum bet required for all casino games.
+    function setMinimumBet(uint256 _bet) external onlyOwner {
+        require(_bet >= 0, "Bet is too low.");
+        minimumBet = _bet;
+    }
+
+     // Sets the value of gameInProgress to true or false for a player.
+    function setGameInProgress(address _address, bool _isPlaying) internal {
+        gameInProgress[_address] = _isPlaying;
+    }
+
+    // Sets the value of totalBet to the provided value for a player.
+    function setTotalBet(address _address, uint256 _amount) internal {
+        totalBet[_address] = _amount;
+    }
+
+    // Rewards the user for the specified amount if they have won
+    // anything from a casino game. Uses the Casino contract's payWinnings
+    // function to achieve this.
+    function rewardUser(address _user, uint256 _amount) internal {
+        require(_amount >= 0, "Not enough to withdraw.");
+        casinoContract.payWinnings(_user, _amount);
+        emit RewardPaid(_user, _amount);
+    }
+
+    // Allows a user to place a bet by paying the contract
+    // the specified amount.
+    function placeBet(uint256 _amount) public payable {
+        require(msg.value >= _amount, "Not enough tokens provided.");
+        emit ContractPaid(msg.sender, msg.value);
+    }
+
+    // Sets the total bet amount for a certain address.
+    function setNewBet(address _address, uint256 _amount) internal {
+        require(_amount > 0, "Bet is too low");
+        setTotalBet(_address, _amount);
     }
 }
