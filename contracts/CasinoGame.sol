@@ -7,6 +7,11 @@ interface CasinoInterface {
     function payWinnings(address to, uint256 amount) external;
 }
 
+interface ChipInterface {
+    function casinoGameBalanceOf(address _owner) external view returns (uint256 balance);
+    function casinoGameTransfer(address _to, uint256 _value) external returns (bool success);
+}
+
 /* The CasinoGame contract defines top-level state variables
 *  and functions that all casino games must have. More game-specific
 *  variables and functions will be defined in subclasses that inherit it.
@@ -15,7 +20,8 @@ contract CasinoGame is Ownable {
 
     // State variables
     CasinoInterface private casinoContract;
-    uint256 internal minimumBet = 0.05 ether;
+    ChipInterface private chipContract;
+    uint256 internal minimumBet;
     mapping (address => bool) private gameInProgress;
 
     // Events (to be emitted)
@@ -26,6 +32,12 @@ contract CasinoGame is Ownable {
     function setCasinoContractAddress(address _address) external onlyOwner {
         casinoContract = CasinoInterface(_address);
     }
+
+    // Sets the address of the Chip contract.
+    function setChipContractAddress(address _address) external onlyOwner {
+        chipContract = ChipInterface(_address);
+    }
+
 
     // Sets the minimum bet required for all casino games.
     function setMinimumBet(uint256 _bet) external onlyOwner {
@@ -47,10 +59,9 @@ contract CasinoGame is Ownable {
         emit RewardPaid(_user, _amount);
     }
 
-    // Allows a user to place a bet by paying the contract
-    // the specified amount.
-    function payContract(uint256 _amount) public payable {
-        require(msg.value >= _amount, "Not enough tokens provided.");
-        emit ContractPaid(msg.sender, msg.value);
+    // Allows a user to place a bet by paying the contract the specified amount.
+    function payContract(uint256 _amount) public  {
+        require(chipContract.casinoGameBalanceOf(msg.sender) >= _amount, "Not enough tokens.");
+        emit ContractPaid(msg.sender, _amount);
     }
 }
