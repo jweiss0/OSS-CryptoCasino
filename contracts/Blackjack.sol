@@ -8,6 +8,7 @@ struct BlackjackPlayer {
     uint256 totalBet;
     bool isBust;
     bool isBlackjack;
+    bool isStand;
     /* Use separate string arrays instead of Card struct to resolve
     * "Copying of type struct memory[] memory to storage not yet supported" errors
     */
@@ -80,26 +81,40 @@ contract Blackjack is Ownable, CasinoGame {
 
     // Handles the end of a blackjack round. It sets the isPlayingRound and gameInProgress
     // attributes to false. Then, it resets the BlackjackGame attributes.
-    function endRound() public {
-        require(isPlayingRound[msg.sender] == true, "Not playing round.");
+    function endRound(address _playerAddress) public {
+        require(isPlayingRound[_playerAddress] == true, "Not playing round.");
 
-        setIsPlayingRound(msg.sender, false);
-        setGameInProgress(msg.sender, false);
-        resetBJGame(bjGames[msg.sender]);
+        // Handle any payouts from the round based on player.totalbet
+        // If the dealer busts, the player has a natural blackjack, or the user has a higher hand, they win.
+        BlackjackGame memory game = bjGames[_playerAddress];
+        if(game.dealer.isBust || game.player.isBlackjack || hasGreaterHand(game.player, game.dealer)) {
+            rewardUser(_playerAddress, game.player.totalBet*2);
+        }
+
+        setIsPlayingRound(_playerAddress, false);
+        setGameInProgress(_playerAddress, false);
+        resetBJGame(_playerAddress);
     }
 
     // Handles the first deal of cards to player and dealer.
-    function deal(address _address) internal {
-        require(isPlayingRound[_address] == true, "Not playing round.");
-        BlackjackGame storage game = bjGames[_address];
+    function deal(address _playerAddress) internal {
+        require(isPlayingRound[_playerAddress] == true, "Not playing round.");
+        BlackjackGame storage game = bjGames[_playerAddress];
         dealSingleCard(game, game.player);
         dealSingleCard(game, game.dealer);
         dealSingleCard(game, game.player);
         dealSingleCard(game, game.dealer);
 
         // Let front end know the player and dealer hands
-        emit PlayerCardsUpdated(msg.sender, game.player.cVals, game.player.cSuits);
-        emit DealerCardsUpdated(msg.sender, game.dealer.cVals, game.dealer.cSuits);
+        emit PlayerCardsUpdated(_playerAddress, game.player.cVals, game.player.cSuits);
+        emit DealerCardsUpdated(_playerAddress, game.dealer.cVals, game.dealer.cSuits);
+
+        // Check if player has natural blackjack
+        if(hasBlackjack(game.player))
+            game.player.isBlackjack = true;
+            // Only a single player, so no need for dealer to continue playing after this
+        else if (hasBlackjack(game.dealer))
+            game.dealer.isBlackjack = true;
     }
 
     // Handles splitting cards from a player's hand.
@@ -119,22 +134,64 @@ contract Blackjack is Ownable, CasinoGame {
     // Handles dealing another card to the player.
     function hitPlayer() public {
         require(isPlayingRound[msg.sender] == true, "Not playing round.");
+        
+        BlackjackGame storage game = bjGames[msg.sender];
+        require(game.player.cVals.length >= 2, "Not yet dealt cards.");
+        require(!game.player.isBust, "Already lost round.");
+        require(!game.player.isBlackjack, "Already won round.");
 
+        dealSingleCard(game, game.player);
         emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.cVals, bjGames[msg.sender].player.cSuits);
+
+        // Check if player has gone over 21 or has hit 21
+        uint16 handVal = getHandValue(game.player);
+        if(handVal  > 21) {
+           game.player.isBust = true;
+        } else if(handVal == 21) {
+            game.player.isStand = true;
+        }
     }
 
     // Handles finishing a player's turn.
-    function standPlayer() public {
-        require(isPlayingRound[msg.sender] == true, "Not playing round.");
+    function endPlayerTurn(address _playerAddress) public {
+        require(isPlayingRound[_playerAddress] == true, "Not playing round.");
+
+        BlackjackGame storage game = bjGames[_playerAddress];
+        require(game.player.cVals.length >= 2, "Not yet dealt cards.");
+        require(!game.player.isBust, "Already lost round.");
+        require(!game.player.isBlackjack, "Already won round.");
+
+        game.player.isStand = true;
+        
+        // Begin dealer's turn
+        dealerPlay(_playerAddress);
+    }
+
+    function dealerPlay(address _playerAddress) private {
+        require(isPlayingRound[_playerAddress] == true, "Not playing round.");
+        BlackjackGame storage game = bjGames[_playerAddress];
+
+        // Dealer hits on soft 17
+        // Dealer stands on 17 or above
+        while(!game.dealer.isBust && !game.dealer.isStand && getHandValue(game.dealer) < 17) {
+            hitDealer(_playerAddress, game);
+            // Check if dealer has gone over 21 or has hit 21
+            uint16 handVal = getHandValue(game.dealer);
+            if(handVal  > 21) {
+            game.dealer.isBust = true;
+            } else if(handVal == 21 || handVal >= 17) {
+                game.dealer.isStand = true;
+            }
+        }
+
+        // Dealer's turn is complete, and so is the game
+        endRound(_playerAddress);
     }
 
     // Handles dealing another card to the dealer.
-    function hitDealer() public {
-        emit DealerCardsUpdated(msg.sender, bjGames[msg.sender].dealer.cVals, bjGames[msg.sender].dealer.cSuits);
-    }
-
-    // Handles finishing a dealer's turn.
-    function standDealer() public {
+    function hitDealer(address _playerAddress, BlackjackGame storage game) private {
+        dealSingleCard(game, game.dealer);
+        emit DealerCardsUpdated(_playerAddress, bjGames[_playerAddress].dealer.cVals, bjGames[_playerAddress].dealer.cSuits);
     }
 
     // Handles selecting and dealing a single card to the specified player.
@@ -168,19 +225,56 @@ contract Blackjack is Ownable, CasinoGame {
     }
 
     // Resets a BlackjackGame and all the internal attributes.
-    function resetBJGame(BlackjackGame storage _game) internal {
+    function resetBJGame(address _playerAddress) internal {
+        BlackjackGame storage game = bjGames[_playerAddress];
         // Reset player attributes
-        _game.player.totalBet = 0;
-        _game.player.isBust = false;
-        _game.player.isBlackjack = false;
-        delete _game.player.cVals;
-        delete _game.player.cSuits;
+        game.player.totalBet = 0;
+        game.player.isBust = false;
+        game.player.isBlackjack = false;
+        delete game.player.cVals;
+        delete game.player.cSuits;
 
         // Reset dealer attributes
-        _game.dealer.isBust = false;
-        _game.dealer.isBlackjack = false;
-        delete _game.dealer.cVals;
-        delete _game.dealer.cSuits;
+        game.dealer.isBust = false;
+        game.dealer.isBlackjack = false;
+        delete game.dealer.cVals;
+        delete game.dealer.cSuits;
+    }
+
+    // Returns true if the player has a hand greater in value than that of the dealer.
+    // If player has 1 or more Aces, finds the highest combination without going over 21.
+    function hasGreaterHand(BlackjackPlayer memory _player, BlackjackPlayer memory _dealer) private returns (bool) {
+
+    }
+
+    // Returns true if the player has a natural blackjack, otherwise false.
+    function hasBlackjack(BlackjackPlayer memory _player) private pure returns (bool) {
+        require(_player.cVals.length == 2, "Incorrect amount of cards.");
+        bool hasAce = false;
+        bool hasFace = false;
+        for (uint i = 0; i < _player.cVals.length; i++) {
+            uint16 cardVal = getCardValue(_player.cVals[i]);
+            if(cardVal == 10)
+                hasFace = true;
+            else if(cardVal == 0)
+                hasAce = true;
+        }
+
+        return hasAce && hasFace;
+    }
+
+    // Returns the numerical value of a player's hand. Always assumes Ace is 1.
+    function getHandValue(BlackjackPlayer memory _player) private pure returns (uint16) {
+        uint16 totalVal = 0;
+        for (uint i = 0; i < _player.cVals.length; i++) {
+            uint16 cardVal = getCardValue(_player.cVals[i]);
+            if(cardVal == 0)
+                totalVal += 1;
+            else
+                totalVal += cardVal;
+        }
+
+        return totalVal;
     }
 
     // Returns the integer value of a card. Returns 0 for Ace. Returns type(uint16).max if 
