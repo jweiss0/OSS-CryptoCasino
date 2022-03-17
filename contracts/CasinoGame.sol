@@ -4,13 +4,12 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface CasinoInterface {
-    function payWinnings(address to, uint256 amount) external;
+    function payWinnings(address _to, uint256 _amount) external;
 }
 
 interface ChipInterface {
-    function casinoGameBalanceOf(address _owner) external view returns (uint256 balance);
-    function casinoGameTransfer(address _to, uint256 _value) external returns (bool success);
-    function casinoGameApprove(address _spender, uint256 _value) external returns (bool success);
+    function balanceOf(address account) external view returns (uint256);
+    function casinoTransferFrom(address _from, address _to, uint256 _value) external;
 }
 
 /* The CasinoGame contract defines top-level state variables
@@ -61,8 +60,9 @@ contract CasinoGame is Ownable {
     }
 
     // Allows a user to place a bet by paying the contract the specified amount.
-    function payContract(uint256 _amount) public  {
-        require(chipContract.casinoGameBalanceOf(msg.sender) >= _amount, "Not enough tokens.");
+    function payContract(address _address, uint256 _amount) public  {
+        require(chipContract.balanceOf(msg.sender) >= _amount, "Not enough tokens.");
+        chipContract.casinoTransferFrom(_address, address(casinoContract), _amount);
         emit ContractPaid(msg.sender, _amount);
     }
 }

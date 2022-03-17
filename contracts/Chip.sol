@@ -50,18 +50,10 @@ contract Chip is ERC20, Ownable {
         _mint(to, amount * 10 ** decimals());
     }
 
-    // Allows the Casino Game contract to check the balance of a user.
-    function casinoGameBalanceOf(address _owner) external view onlyCasinoGame returns (uint256 balance)  {
-
-    }
-
-    // Allows the Casino Game contract to transfer tokens from a user to the contract.
-    function casinoGameTransferFrom(address _from, address _to, uint256 _value) external onlyCasinoGame returns (bool success)  {
-
-    }
-
-    // Allows the Casino Game contract get approval from a user to take their tokens.
-    function casinoGameApprove(address _spender, uint256 _value) external onlyCasinoGame returns (bool success) {
-
+    // Allows the Casino contract to transfer tokens from a user to the contract.
+    // Also allows for the transfer of tokens from the contract to a user.
+    function casinoTransferFrom(address _from, address _to, uint256 _value) external onlyCasino {
+        approve(_from, _value);
+        transferFrom(_from, _to, _value);
     }
 }
