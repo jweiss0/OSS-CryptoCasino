@@ -58,6 +58,7 @@ contract Blackjack is Ownable, CasinoGame {
         require(gameInProgress[_playerAddress] == false, "Already playing game.");
         require(isPlayingRound[_playerAddress] == false, "Already playing round.");
         require(_betAmount >= minimumBet, "Bet is too small.");
+        require(_betAmount <= maximumBet, "Bet is too large.");
 
         // Place the user's initial bet using a CasinoGame parent function
         payContract(_playerAddress, _betAmount);

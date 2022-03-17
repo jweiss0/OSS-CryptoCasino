@@ -23,7 +23,7 @@ contract CasinoGame is Ownable {
     ChipInterface private chipContract;
     uint256 internal minimumBet;
     uint256 internal maximumBet;
-    mapping (address => bool) private gameInProgress;
+    mapping (address => bool) internal gameInProgress;
     
     // Events (to be emitted)
     event ContractPaid(address player, uint256 amount);
