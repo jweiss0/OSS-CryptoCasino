@@ -22,8 +22,9 @@ contract CasinoGame is Ownable {
     CasinoInterface private casinoContract;
     ChipInterface private chipContract;
     uint256 internal minimumBet;
+    uint256 internal maximumBet;
     mapping (address => bool) private gameInProgress;
-
+    
     // Events (to be emitted)
     event ContractPaid(address player, uint256 amount);
     event RewardPaid(address player, uint256 amount);
@@ -43,6 +44,12 @@ contract CasinoGame is Ownable {
     function setMinimumBet(uint256 _bet) external onlyOwner {
         require(_bet >= 0, "Bet is too low.");
         minimumBet = _bet;
+    }
+    
+    // Sets the maximum bet allowed for all casino games.
+    function setMaximumBet(uint256 _bet) external onlyOwner {
+        require(_bet <= maximumBet, "Bet is too high.");
+        maximumBet = _bet;
     }
 
      // Sets the value of gameInProgress to true or false for a player.
