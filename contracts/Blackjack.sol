@@ -59,6 +59,9 @@ contract Blackjack is Ownable, CasinoGame {
         require(isPlayingRound[_playerAddress] == false, "Already playing round.");
         require(_betAmount >= minimumBet, "Bet is too small.");
 
+        // Place the user's initial bet using a CasinoGame parent function
+        payContract(_playerAddress, _betAmount);
+
         //  Initialize new game round
         BlackjackPlayer memory player;
         BlackjackPlayer memory dealer;
