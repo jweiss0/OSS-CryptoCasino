@@ -4,7 +4,9 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface ChipInterface {
+    function balanceOf(address account) external view returns (uint256);
     function casinoMint(address to, uint256 amount) external;
+    function casinoTransferFrom(address _from, address _to, uint256 _value) external returns (bool success);
 }
 
 /* The Casino contract defines top-level Casino-related transactions that occur
@@ -40,9 +42,12 @@ contract Casino is Ownable {
         freeTokensClaimed[msg.sender] = true;
     }
 
-    // Pays a certain amount of winnings to the specified contract. If the Casino
+    // Pays a certain amount of winnings to the specified address. If the Casino
     // contract does not have enough Chips, 1000 more are minted for the Casino.
-    function payWinnings(address to, uint256 amount) external onlyCasinoGame {
-
+    function payWinnings(address _to, uint256 _amount) external onlyCasinoGame {
+        if(chipContract.balanceOf(address(this)) <= _amount) {
+            chipContract.casinoMint(address(this), 100);
+        }
+        chipContract.casinoTransferFrom(address(this), _to, _amount);
     }
 }
