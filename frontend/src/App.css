@@ -1,16 +1,11 @@
 @import url("https://fonts.googleapis.com/css2?family=Righteous&display=swap");
 
+body {
+  background-color: rgb(247, 247, 255);
+}
+
 .brand {
   font-family: "Righteous", cursive;
-}
-
-.landing-page-container > div:nth-child(1) {
-  width: 100%;
-}
-
-.landing-page-container > div:nth-child(2) {
-  width: 100%;
-  text-align: center;
 }
 
 .landing-page-image-container {
@@ -22,8 +17,11 @@
   width: 100%;
 }
 
-.landing-page-subtitle {
-  font-family: sans-serif;
+.landing-page-title {
+  color: rgb(39, 154, 241);
+  font-family: "Righteous", cursive;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 /* sm */
@@ -39,16 +37,6 @@
 
 /* lg */
 @media (min-width: 992px) {
-  .landing-page-container > div:nth-child(1) {
-    order: 2;
-    width: 50%;
-  }
-
-  .landing-page-container > div:nth-child(2) {
-    width: 50%;
-    text-align: left;
-  }
-
   .landing-page-image-container {
     width: 30rem;
   }
