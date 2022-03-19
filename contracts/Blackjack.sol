@@ -124,24 +124,37 @@ contract Blackjack is Ownable, CasinoGame {
         emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.cVals, bjGames[msg.sender].player.cSuits);
     }
 
-    // Handles doubling down on a hand.
+    // Handles doubling down on a player's hand.
     function doubleDown() public {
         require(isPlayingRound[msg.sender] == true, "Not playing round.");
 
+        BlackjackGame storage game = bjGames[msg.sender];
+        require(game.player.cVals.length == 2, "Invalid number of cards.");
+        require(!game.player.isBust, "Already lost round.");
+        require(!game.player.isBlackjack, "Already won round.");
+
+        // Double the user's bet using a CasinoGame parent function
+        payContract(msg.sender, game.player.totalBet);
+        game.player.totalBet = game.player.totalBet * 2;
+        emit PlayerBetUpdated(msg.sender, game.player.totalBet);
+
+        // Hit a single time, then end the player's turn
+        hitPlayer(msg.sender);
         emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.cVals, bjGames[msg.sender].player.cSuits);
+        endPlayerTurn(msg.sender);
     }
 
     // Handles dealing another card to the player.
-    function hitPlayer() public {
-        require(isPlayingRound[msg.sender] == true, "Not playing round.");
+    function hitPlayer(address _playerAddress) public {
+        require(isPlayingRound[_playerAddress] == true, "Not playing round.");
         
-        BlackjackGame storage game = bjGames[msg.sender];
+        BlackjackGame storage game = bjGames[_playerAddress];
         require(game.player.cVals.length >= 2, "Not yet dealt cards.");
         require(!game.player.isBust, "Already lost round.");
         require(!game.player.isBlackjack, "Already won round.");
 
         dealSingleCard(game, game.player);
-        emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.cVals, bjGames[msg.sender].player.cSuits);
+        emit PlayerCardsUpdated(_playerAddress, bjGames[_playerAddress].player.cVals, bjGames[_playerAddress].player.cSuits);
 
         // Check if player has gone over 21 or has hit 21
         uint16 handVal = getHandValue(game.player);
