@@ -8,12 +8,12 @@ struct BlackjackPlayer {
     uint256 totalBet;
     bool isBust;
     bool isBlackjack;
-    bool isStand;
     /* Use separate string arrays instead of Card struct to resolve
     * "Copying of type struct memory[] memory to storage not yet supported" errors
     */
     string[] cVals;
     string[] cSuits;
+    uint8[] splits;
 }
 
 struct BlackjackGame {
@@ -38,6 +38,7 @@ contract Blackjack is Ownable, CasinoGame {
     event PlayerCardsUpdated(address player, string[] cardVals, string[] cardSuits);
     event DealerCardsUpdated(address player, string[] cardVals, string[] cardSuits);
     event PlayerBetUpdated(address player, uint256 newBet);
+    event RoundResult(address player, string result); // result = blackjack | win | push | lose | bust
 
     // Updates the value of numDecks, the number of decks to play with
     function setNumDecks(uint8 _decks) public onlyOwner {
@@ -85,11 +86,45 @@ contract Blackjack is Ownable, CasinoGame {
         require(isPlayingRound[_playerAddress] == true, "Not playing round.");
 
         // Handle any payouts from the round based on player.totalbet
-        // If the dealer busts, the player has a natural blackjack, or the user has a higher hand, they win.
         BlackjackGame memory game = bjGames[_playerAddress];
-        if(game.dealer.isBust || game.player.isBlackjack || hasGreaterHand(game.player, game.dealer)) {
-            rewardUser(_playerAddress, game.player.totalBet*2);
+        string memory result = "lose";
+
+        // Only reward player if they didn't bust
+        if(!game.player.isBust) {
+            uint16 playerHandVal = getHighestHandValue(game.player);            
+
+            // If player has natural blackjack or a higher hand, they win double their bet.
+            // If the player has the same hand as the dealer, they win their bet back (push).
+            if(game.player.isBlackjack) {
+                if(game.dealer.isBlackjack) {
+                    // If both player and dealer have blackjack, then push
+                    rewardUser(_playerAddress, game.player.totalBet);
+                    result = "push";
+                } else {
+                    // Otherwise, blackjack pays 3:2
+                    rewardUser(_playerAddress, ((game.player.totalBet*3) / 2) + game.player.totalBet);
+                    result = "blackjack";
+                }
+            } else if(!game.dealer.isBust) {
+                uint16 dealerHandVal = getHighestHandValue(game.dealer);
+                if (playerHandVal > dealerHandVal) {
+                    // Winning hand pays 1:1
+                    rewardUser(_playerAddress, game.player.totalBet*2);
+                    result = "win";
+                } else if (playerHandVal == dealerHandVal) {
+                    // Push pays back bet
+                    rewardUser(_playerAddress, game.player.totalBet);
+                    result = "push";
+                }
+            } else {
+                // Winning hand when dealer busts pays 1:1
+                result = "win";
+            }
+        } else {
+            result = "bust";
         }
+
+        emit RoundResult(_playerAddress, result);
 
         setIsPlayingRound(_playerAddress, false);
         setGameInProgress(_playerAddress, false);
@@ -156,13 +191,10 @@ contract Blackjack is Ownable, CasinoGame {
         dealSingleCard(game, game.player);
         emit PlayerCardsUpdated(_playerAddress, bjGames[_playerAddress].player.cVals, bjGames[_playerAddress].player.cSuits);
 
-        // Check if player has gone over 21 or has hit 21
-        uint16 handVal = getHandValue(game.player);
-        if(handVal  > 21) {
+        // Check if player has gone over 21
+        uint16 handVal = getLowestHandValue(game.player);
+        if(handVal  > 21)
            game.player.isBust = true;
-        } else if(handVal == 21) {
-            game.player.isStand = true;
-        }
     }
 
     // Handles finishing a player's turn.
@@ -171,29 +203,26 @@ contract Blackjack is Ownable, CasinoGame {
 
         BlackjackGame storage game = bjGames[_playerAddress];
         require(game.player.cVals.length >= 2, "Not yet dealt cards.");
-        require(!game.player.isBust, "Already lost round.");
-        require(!game.player.isBlackjack, "Already won round.");
-
-        game.player.isStand = true;
         
         // Begin dealer's turn
         dealerPlay(_playerAddress);
     }
 
+    // Handles logic for the dealer's turn
     function dealerPlay(address _playerAddress) private {
         require(isPlayingRound[_playerAddress] == true, "Not playing round.");
         BlackjackGame storage game = bjGames[_playerAddress];
 
         // Dealer hits on soft 17
         // Dealer stands on 17 or above
-        while(!game.dealer.isBust && !game.dealer.isStand && getHandValue(game.dealer) < 17) {
+        while(!game.dealer.isBust && getLowestHandValue(game.dealer) < 17) {
             hitDealer(_playerAddress, game);
             // Check if dealer has gone over 21 or has hit 21
-            uint16 handVal = getHandValue(game.dealer);
+            uint16 handVal = getLowestHandValue(game.dealer);
             if(handVal  > 21) {
             game.dealer.isBust = true;
-            } else if(handVal == 21 || handVal >= 17) {
-                game.dealer.isStand = true;
+            } else if(handVal >= 17) {
+                break;
             }
         }
 
@@ -254,12 +283,6 @@ contract Blackjack is Ownable, CasinoGame {
         delete game.dealer.cSuits;
     }
 
-    // Returns true if the player has a hand greater in value than that of the dealer.
-    // If player has 1 or more Aces, finds the highest combination without going over 21.
-    function hasGreaterHand(BlackjackPlayer memory _player, BlackjackPlayer memory _dealer) private returns (bool) {
-
-    }
-
     // Returns true if the player has a natural blackjack, otherwise false.
     function hasBlackjack(BlackjackPlayer memory _player) private pure returns (bool) {
         require(_player.cVals.length == 2, "Incorrect amount of cards.");
@@ -276,8 +299,8 @@ contract Blackjack is Ownable, CasinoGame {
         return hasAce && hasFace;
     }
 
-    // Returns the numerical value of a player's hand. Always assumes Ace is 1.
-    function getHandValue(BlackjackPlayer memory _player) private pure returns (uint16) {
+    // Returns the lowest numerical value of a player's hand. Always assumes Ace is 1.
+    function getLowestHandValue(BlackjackPlayer memory _player) private pure returns (uint16) {
         uint16 totalVal = 0;
         for (uint i = 0; i < _player.cVals.length; i++) {
             uint16 cardVal = getCardValue(_player.cVals[i]);
@@ -287,6 +310,29 @@ contract Blackjack is Ownable, CasinoGame {
                 totalVal += cardVal;
         }
 
+        return totalVal;
+    }
+    
+
+    // Returns the highest numerical value of a player's hand, trying to avoid going over 21.
+    function getHighestHandValue(BlackjackPlayer memory _player) private pure returns (uint16) {
+        uint16 totalVal = 0;
+        uint8[] memory aces;
+        // First count non-Aces. Then, keep assuming 11 for Ace
+        // until it would cause a bust, in which case we then assume 1.
+        for(uint i = 0; i < _player.cVals.length; i++) {
+            uint16 cardVal = getCardValue(_player.cVals[i]);
+            if(cardVal == 0) 
+                aces[aces.length] = uint8(i);
+            else
+                totalVal += cardVal;
+        }
+        for(uint i = 0; i < aces.length; i++) {
+            if(totalVal + 11 <= 21)
+                totalVal += 11;
+            else
+                totalVal += 1;
+        }
         return totalVal;
     }
 
