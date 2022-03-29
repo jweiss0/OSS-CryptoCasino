@@ -30,7 +30,6 @@ struct BlackjackGame {
 contract Blackjack is Ownable, CasinoGame {
 
     // State variables
-    mapping (address => bool) private isPlayingRound;
     mapping (address => BlackjackGame) private bjGames;
     string[13] private cardValues = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
     string[4] private cardSuits = ["Diamonds", "Clubs", "Hearts", "Spades"];
@@ -49,11 +48,6 @@ contract Blackjack is Ownable, CasinoGame {
         numDecks = _decks;
     }
 
-    // Sets the value of isPlayingRound to true or false for a player
-    function setIsPlayingRound(address _address, bool _isPlaying) private {
-        isPlayingRound[_address] = _isPlaying;
-    }
-
     // Handles the initial start of a blackjack round. It creates a new BlackjackGame with
     // a new player and dealer. It also sets the isPlayingRound and gameInProgress attributes
     // to true. Lastly, it handles the initial dealing of cards to the player and the dealer.
@@ -61,8 +55,7 @@ contract Blackjack is Ownable, CasinoGame {
     function playRound(uint256 _betAmount) external {
         // Only start the round if player is not in the middle of a game or an existing round.
         // Check that the paid bet is large enough.
-        require(gameInProgress[msg.sender] == false, "Already playing game.");
-        require(isPlayingRound[msg.sender] == false, "Already playing round.");
+        require(roundInProgress[msg.sender] == false, "Already playing game.");
         require(_betAmount >= minimumBet, "Bet is too small.");
         require(_betAmount <= maximumBet, "Bet is too large.");
 
@@ -70,9 +63,7 @@ contract Blackjack is Ownable, CasinoGame {
         payContract(msg.sender, _betAmount);
 
         //  Initialize new game round
-        // BlackjackGame storage game = bjGames[_playerAddress];
-        setIsPlayingRound(msg.sender, true);
-        setGameInProgress(msg.sender, true);
+        setRoundInProgress(msg.sender, true);
 
         // Let front end know a new round has begun
         emit NewRound(msg.sender, _betAmount);
@@ -84,7 +75,7 @@ contract Blackjack is Ownable, CasinoGame {
     // Handles the end of a blackjack round. It sets the isPlayingRound and gameInProgress
     // attributes to false. Then, it resets the BlackjackGame attributes.
     function endRound(address _playerAddress) public {
-        require(isPlayingRound[_playerAddress] == true, "Not playing round.");
+        require(roundInProgress[_playerAddress] == true, "Not playing round.");
 
         // Handle any payouts from the round based on player.totalbet
         BlackjackGame storage game = bjGames[_playerAddress];
@@ -141,14 +132,13 @@ contract Blackjack is Ownable, CasinoGame {
         rewardUser(_playerAddress, totalPayout);
         emit RoundResult(_playerAddress, totalPayout, winAmount);
 
-        setIsPlayingRound(_playerAddress, false);
-        setGameInProgress(_playerAddress, false);
+        setRoundInProgress(_playerAddress, false);
         resetBJGame(_playerAddress);
     }
 
     // Handles the first deal of cards to player and dealer.
     function deal(address _playerAddress) private {
-        require(isPlayingRound[_playerAddress] == true, "Not playing round.");
+        require(roundInProgress[_playerAddress] == true, "Not playing round.");
         BlackjackGame storage game = bjGames[_playerAddress];
 
         // Initialize starting hand and deal first set of cards.
@@ -189,7 +179,7 @@ contract Blackjack is Ownable, CasinoGame {
 
     // Handles splitting cards from a player's hand.
     function splitPlayerHand(uint8 _handInd) public {
-        require(isPlayingRound[msg.sender] == true, "Not playing round.");
+        require(roundInProgress[msg.sender] == true, "Not playing round.");
 
         BlackjackGame storage game = bjGames[msg.sender];
         require(game.player.hands[_handInd].cVals.length == 2, "Invalid number of cards.");
@@ -238,7 +228,7 @@ contract Blackjack is Ownable, CasinoGame {
     // Handles doubling down on a player's hand.
     // function doubleDown(BlackjackHand memory _hand, uint8 handInd) public {
     function doubleDown(uint8 handInd) public {
-        require(isPlayingRound[msg.sender] == true, "Not playing round.");
+        require(roundInProgress[msg.sender] == true, "Not playing round.");
 
         BlackjackGame storage game = bjGames[msg.sender];
         BlackjackHand memory hand = game.player.hands[handInd];
@@ -260,7 +250,7 @@ contract Blackjack is Ownable, CasinoGame {
 
     // Handles dealing another card to the player.
     function hitPlayer(address _playerAddress, uint8 handInd) public {
-        require(isPlayingRound[_playerAddress] == true, "Not playing round.");
+        require(roundInProgress[_playerAddress] == true, "Not playing round.");
         
         BlackjackGame storage game = bjGames[_playerAddress];
         require(game.player.hands[handInd].cVals.length >= 2, "Not yet dealt cards.");
@@ -280,7 +270,7 @@ contract Blackjack is Ownable, CasinoGame {
 
     // Handles finishing a player's turn.
     function endPlayerTurn(address _playerAddress) public {
-        require(isPlayingRound[_playerAddress] == true, "Not playing round.");
+        require(roundInProgress[_playerAddress] == true, "Not playing round.");
 
         BlackjackGame storage game = bjGames[_playerAddress];
         require(game.player.numHands > 0 && game.player.hands[0].cVals.length >= 2, "Not yet dealt cards.");
@@ -291,7 +281,7 @@ contract Blackjack is Ownable, CasinoGame {
 
     // Handles logic for the dealer's turn
     function dealerPlay(address _playerAddress) private {
-        require(isPlayingRound[_playerAddress] == true, "Not playing round.");
+        require(roundInProgress[_playerAddress] == true, "Not playing round.");
         BlackjackGame storage game = bjGames[_playerAddress];
 
         // Dealer hits on soft 17
@@ -320,7 +310,7 @@ contract Blackjack is Ownable, CasinoGame {
 
     // Handles selecting and dealing a single card to the specified player.
     function dealSingleCard(BlackjackGame storage _game, BlackjackHand storage _hand) private {
-        require(isPlayingRound[msg.sender] == true, "Not playing round.");
+        require(roundInProgress[msg.sender] == true, "Not playing round.");
 
         bool validCard = false;
         uint tries = 0;

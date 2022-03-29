@@ -25,12 +25,6 @@ async function main() {
     await dCasino.deployed();
     console.log("Casino deployed to:", dCasino.address);
 
-    // Deploy CasinoGame contract
-    const fCasinoGame = await ethers.getContractFactory("CasinoGame");
-    const dCasinoGame = await fCasinoGame.deploy();
-    await dCasinoGame.deployed();
-    console.log("CasinoGame deployed to:", dCasinoGame.address);
-
     // Deploy Blackjack contract
     const fBlackjack = await ethers.getContractFactory("Blackjack");
     const dBlackjack = await fBlackjack.deploy();
@@ -39,21 +33,12 @@ async function main() {
 
     // Set values in Chip contract
     await dChip.setCasinoAddress(dCasino.address);
-    await dChip.setCasinoGameAddress(dCasinoGame.address);
     console.log("Set initial state values for Chip contract");
     
     // Set values in Casino contract
     await dCasino.setChipContractAddress(dChip.address);
+    await dCasino.addCasinoGameContractAddress(dBlackjack.address);
     console.log("Set initial state values for Casino contract");
-
-    // Set values in CasinoGame contract
-    await dCasinoGame.setCasinoContractAddress(dCasino.address);
-    await dCasinoGame.setChipContractAddress(dChip.address);
-    console.log("Set initial state values for CasinoGame contract");
-
-    await dCasinoGame.setMinimumBet(1);
-    await dCasinoGame.setMaximumBet(500);
-    console.log("Set initial min and max bets for CasinoGame contract");
 
     await dBlackjack.setMinimumBet(1);
     await dBlackjack.setMaximumBet(500);
