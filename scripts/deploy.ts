@@ -36,6 +36,28 @@ async function main() {
     const dBlackjack = await fBlackjack.deploy();
     await dBlackjack.deployed();
     console.log("Blackjack deployed to:", dBlackjack.address);
+
+    // Set values in Chip contract
+    await dChip.setCasinoAddress(dCasino.address);
+    await dChip.setCasinoGameAddress(dCasinoGame.address);
+    console.log("Set initial state values for Chip contract");
+    
+    // Set values in Casino contract
+    await dCasino.setChipContractAddress(dChip.address);
+    console.log("Set initial state values for Casino contract");
+
+    // Set values in CasinoGame contract
+    await dCasinoGame.setCasinoContractAddress(dCasino.address);
+    await dCasinoGame.setChipContractAddress(dChip.address);
+    console.log("Set initial state values for CasinoGame contract");
+
+    await dCasinoGame.setMinimumBet(1);
+    await dCasinoGame.setMaximumBet(500);
+    console.log("Set initial min and max bets for CasinoGame contract");
+
+    await dBlackjack.setMinimumBet(1);
+    await dBlackjack.setMaximumBet(500);
+    console.log("Set initial min and max bets for Blackjack contract");
 }
 
 // We recommend this pattern to be able to use async/await everywhere

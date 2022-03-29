@@ -57,27 +57,28 @@ contract Blackjack is Ownable, CasinoGame {
     // Handles the initial start of a blackjack round. It creates a new BlackjackGame with
     // a new player and dealer. It also sets the isPlayingRound and gameInProgress attributes
     // to true. Lastly, it handles the initial dealing of cards to the player and the dealer.
-    function playRound(uint256 _betAmount, address _playerAddress) public {
+    // function playRound(uint256 _betAmount, address _playerAddress) public {
+    function playRound(uint256 _betAmount) external {
         // Only start the round if player is not in the middle of a game or an existing round.
         // Check that the paid bet is large enough.
-        require(gameInProgress[_playerAddress] == false, "Already playing game.");
-        require(isPlayingRound[_playerAddress] == false, "Already playing round.");
+        require(gameInProgress[msg.sender] == false, "Already playing game.");
+        require(isPlayingRound[msg.sender] == false, "Already playing round.");
         require(_betAmount >= minimumBet, "Bet is too small.");
         require(_betAmount <= maximumBet, "Bet is too large.");
 
         // Place the user's initial bet using a CasinoGame parent function
-        payContract(_playerAddress, _betAmount);
+        payContract(msg.sender, _betAmount);
 
         //  Initialize new game round
         // BlackjackGame storage game = bjGames[_playerAddress];
-        setIsPlayingRound(_playerAddress, true);
-        setGameInProgress(_playerAddress, true);
+        setIsPlayingRound(msg.sender, true);
+        setGameInProgress(msg.sender, true);
 
         // Let front end know a new round has begun
         emit NewRound(msg.sender, _betAmount);
 
         // Handle initial dealing of cards
-        deal(_playerAddress);
+        deal(msg.sender);
     }
 
     // Handles the end of a blackjack round. It sets the isPlayingRound and gameInProgress

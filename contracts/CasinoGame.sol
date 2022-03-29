@@ -48,7 +48,7 @@ contract CasinoGame is Ownable {
     
     // Sets the maximum bet allowed for all casino games.
     function setMaximumBet(uint256 _bet) external onlyOwner {
-        require(_bet <= maximumBet, "Bet is too high.");
+        require(_bet >= 0, "Bet is too high.");
         maximumBet = _bet;
     }
 
