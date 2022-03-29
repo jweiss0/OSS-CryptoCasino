@@ -19,12 +19,7 @@ This project is currently under development, utilizing React + Typescript for th
 - Navigate to project root folder
 - Run `$ npm install`
 
-#### Local Network Deployment
-- Run `$npx hardhat node` in a terminal
-- Run `npx hardhat run --network localhost scripts/deploy.ts` in a different terminal
-
-Try running some of the following tasks with Hardhat:
-
+#### Hardhat Tasks
 ```shell
 npx hardhat accounts
 npx hardhat compile
@@ -43,6 +38,11 @@ npx prettier '**/*.{json,sol,md}' --write
 npx solhint 'contracts/**/*.sol'
 npx solhint 'contracts/**/*.sol' --fix
 ```
+
+#### Local Network Deployment
+- Run `$ npx hardhat node` in a terminal
+- Run `$ npx hardhat run --network localhost scripts/deploy.ts` in a different terminal
+
 <!-- #### Etherscan Verification
 To try out Etherscan verification, first deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
 
