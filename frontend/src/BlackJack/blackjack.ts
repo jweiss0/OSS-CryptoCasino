@@ -1,7 +1,8 @@
+export{};
 /**
  * Objects for cards and deck of cards
  */
- const cardValues = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"];
+ const cardValues: any[] = ["A", 2, 3, 4, 5, 6, 7, 8, 9, 10, "J", "Q", "K"];
  const suits = ["Spades", "Clubs", "Hearts", "Diamonds"];
  
  /**
@@ -13,7 +14,10 @@
   *     Numbers = their value
   */
  class Card{
-     constructor(suit, value){
+     suit: string;
+     value: any;
+     cardVal: number;
+     constructor(suit: number, value: number){
          this.suit = suits[suit];
          this.value = cardValues[value];
          //when constructing the deck, face cards have values of 11, 12, 13
@@ -26,7 +30,7 @@
          }
          //for regular numbers
          else{
-             this.cardVal = Number(value) + 1;
+             this.cardVal = value;
          }
      }
      getVal(){
@@ -39,6 +43,7 @@
   * shuffleDeck is the Fisher-Yates shuffling algorithm
   */
  class Deck{
+    deck: Card[];
     constructor(){
         this.deck = [];
         for (let i = 0; i < 4; i++){
@@ -58,7 +63,7 @@
 
     //deal a card by removing the first card from the array
     dealCard(){
-        return this.deck.shift();
+        return this.deck.shift()!;
     }
  }
 
@@ -69,15 +74,18 @@
   * this.numAces is tracked in order to decide if its value is one or eleven
   */
  class Player{
+     hand: Card[];
+     handValue: number;
+     numAces: number;
      constructor(){
         this.hand = [];
         this.handValue = 0;
         this.numAces = 0;
      }
      //add a card to the player's hand, update hand value
-     addCard(card){
-         this.hand.push(card);
-         this.handValue += card.getVal();
+     addCard(card: Card){
+        this.hand.push(card);
+        this.handValue += card.getVal();
      }
      //return true if a player "busts"(gets hand value over 21)
      bust(){
@@ -105,7 +113,7 @@ newDeck.shuffleDeck();
 let p1 = new Player();
 let dealer = new Player();
  
- //deal initial hands
+//deal initial hands
 p1.addCard(newDeck.dealCard());
 p1.addCard(newDeck.dealCard());
 dealer.addCard(newDeck.dealCard());
@@ -120,27 +128,27 @@ if (p1.blackjack()){
 const p1Hand = document.getElementById("playerHand");
 const dealersHand = document.getElementById("dealerHand");
 const roundResult = document.getElementById("results");
-document.getElementById("playAgain").disabled = true;
+(document.getElementById("playAgain") as HTMLButtonElement).disabled = true;
 
 
 //update hand for dealer and player
-document.getElementById('playerScore').innerHTML = "Your score: " + String(p1.handValue);
-document.getElementById('dealerScore').innerHTML = "Dealer's score: " + String(dealer.handValue);
-p1Hand.innerHTML += `<div class="card">${p1.hand[0].value + " of " + p1.hand[0].suit}</div>`;
-p1Hand.innerHTML += `<div class="card">${p1.hand[1].value + " of " + p1.hand[1].suit}</div>`;
-dealersHand.innerHTML += `<div class="card">${dealer.hand[0].value + " of " + dealer.hand[0].suit}</div>`;
-dealersHand.innerHTML += `<div class="card">${dealer.hand[1].value + " of " + dealer.hand[1].suit}</div>`;
+document.getElementById('playerScore')!.innerHTML = "Your score: " + String(p1.handValue);
+document.getElementById('dealerScore')!.innerHTML = "Dealer's score: " + String(dealer.handValue);
+p1Hand!.innerHTML += `<div class="card">${p1.hand[0].value + " of " + p1.hand[0].suit}</div>`;
+p1Hand!.innerHTML += `<div class="card">${p1.hand[1].value + " of " + p1.hand[1].suit}</div>`;
+dealersHand!.innerHTML += `<div class="card">${dealer.hand[0].value + " of " + dealer.hand[0].suit}</div>`;
+dealersHand!.innerHTML += `<div class="card">${dealer.hand[1].value + " of " + dealer.hand[1].suit}</div>`;
 
 
 //This function represents the player's turn, where they can choose to hit or end their turn by standing
-function playerTurn(playerChoice){
+function playerTurn(playerChoice: string){
     switch (playerChoice){
         case 'hit':
             let hitCard = newDeck.dealCard();
             p1.addCard(hitCard);
-            p1Hand.innerHTML += `<div class="card">${p1.hand[p1.hand.length-1].value + " of " + p1.hand[p1.hand.length-1].suit}</div>`;
+            p1Hand!.innerHTML += `<div class="card">${p1.hand[p1.hand.length-1].value + " of " + p1.hand[p1.hand.length-1].suit}</div>`;
             //p1Hand.insertAdjacentHTML('beforeend', `<div class="card">${p1.hand[p1.hand.length-1].value + " of " + p1.hand[p1.hand.length-1].suit}</div>`);
-            document.getElementById('playerScore').innerHTML = "Your Score: " + String(p1.handValue);
+            document.getElementById('playerScore')!.innerHTML = "Your Score: " + String(p1.handValue);
             if (p1.bust()){
                 endRound();
             }
@@ -160,8 +168,8 @@ function dealerTurn(){
     else{
         let hitCard = newDeck.dealCard();
         dealer.addCard(hitCard);
-        dealersHand.innerHTML += `<div class="card">${dealer.hand[dealer.hand.length-1].value + " of " + dealer.hand[dealer.hand.length-1].suit}</div>`;
-        document.getElementById('dealerScore').innerHTML = "Dealer's score: " + String(dealer.handValue);
+        dealersHand!.innerHTML += `<div class="card">${dealer.hand[dealer.hand.length-1].value + " of " + dealer.hand[dealer.hand.length-1].suit}</div>`;
+        document.getElementById('dealerScore')!.innerHTML = "Dealer's score: " + String(dealer.handValue);
         if (dealer.bust()){
             endRound();
         }
@@ -171,24 +179,24 @@ function dealerTurn(){
 
 //This function ends the round
 function endRound(){
-    document.getElementById("hitButton").disabled = true;
-    document.getElementById("standButton").disabled = true;
+    (document.getElementById("hitButton") as HTMLButtonElement).disabled = true;
+    (document.getElementById("standButton") as HTMLButtonElement).disabled = true;
     if (p1.bust()){
-        roundResult.innerHTML += "You Lose";
+        roundResult!.innerHTML += "You Lose";
     }
     else if (dealer.bust()){
-        roundResult.innerHTML += "You Win";
+        roundResult!.innerHTML += "You Win";
     }
     else if (dealer.handValue > p1.handValue){
-        roundResult.innerHTML += "You Lose";
+        roundResult!.innerHTML += "You Lose";
     }
     else if (p1.handValue > dealer.handValue){
-        roundResult.innerHTML += "You Win";
+        roundResult!.innerHTML += "You Win";
     }
     else{
-        roundResult.innerHTML += "It's a Draw";
+        roundResult!.innerHTML += "It's a Draw";
     }
-    document.getElementById("playAgain").disabled = false;
+    (document.getElementById("playAgain") as HTMLButtonElement).disabled = false;
 }
 
 //This function resets the board so another round can be played (WIP)
@@ -199,11 +207,11 @@ function restart(){
     dealer.hand = [];
     dealer.handValue = 0;
     dealer.numAces = 0;
-    document.getElementById("playerScore").innerHTML = "Your Score: 0";
-    document.getElementById("dealerScore").innerHTML = "Dealer's Score: 0";
-    document.getElementById("playerHand").innerHTML = "<p>Your Hand:</p>";
-    document.getElementById("dealerHand").innerHTML = "<p>Dealer's Hand:</p>";
-    document.getElementById("results").innerHTML = "Result: ";
+    document.getElementById("playerScore")!.innerHTML = "Your Score: 0";
+    document.getElementById("dealerScore")!.innerHTML = "Dealer's Score: 0";
+    document.getElementById("playerHand")!.innerHTML = "<p>Your Hand:</p>";
+    document.getElementById("dealerHand")!.innerHTML = "<p>Dealer's Hand:</p>";
+    document.getElementById("results")!.innerHTML = "Result: ";
 
     //deal initial hands
     p1.addCard(newDeck.dealCard());
@@ -220,15 +228,15 @@ function restart(){
     //const p1Hand = document.getElementById("playerHand");
     //const dealersHand = document.getElementById("dealerHand");
     //const roundResult = document.getElementById("results");
-    document.getElementById("playAgain").disabled = true;
-    document.getElementById("hitButton").disabled = false;
-    document.getElementById("standButton").disabled = false;
+    (document.getElementById("playAgain") as HTMLButtonElement).disabled = true;
+    (document.getElementById("hitButton") as HTMLButtonElement).disabled = false;
+    (document.getElementById("standButton")as HTMLButtonElement).disabled = false;
 
     //update hand for dealer and player
-    document.getElementById('playerScore').innerHTML = "Your score: " + String(p1.handValue);
-    document.getElementById('dealerScore').innerHTML = "Dealer's score: " + String(dealer.handValue);
-    document.getElementById("playerHand").innerHTML += `<div class="card">${p1.hand[0].value + " of " + p1.hand[0].suit}</div>`;
-    p1Hand.innerHTML += `<div class="card">${p1.hand[1].value + " of " + p1.hand[1].suit}</div>`;
+    document.getElementById('playerScore')!.innerHTML = "Your score: " + String(p1.handValue);
+    document.getElementById('dealerScore')!.innerHTML = "Dealer's score: " + String(dealer.handValue);
+    document.getElementById("playerHand")!.innerHTML += `<div class="card">${p1.hand[0].value + " of " + p1.hand[0].suit}</div>`;
+    p1Hand!.innerHTML += `<div class="card">${p1.hand[1].value + " of " + p1.hand[1].suit}</div>`;
     //dealersHand.innerHTML += `<div class="card">${dealer.hand[0].value + " of " + dealer.hand[0].suit}</div>`;
     //dealersHand.innerHTML += `<div class="card">${dealer.hand[1].value + " of " + dealer.hand[1].suit}</div>`;
 }
