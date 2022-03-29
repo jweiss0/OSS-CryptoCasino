@@ -40,6 +40,10 @@ contract Chip is ERC20, Ownable {
         casinoGameAddress = _addr;
     }
 
+    // Getters.
+    function getCasinoAddress() public view returns (address) {return casinoAddress;}
+    function getCasinoGameAddress() public view returns (address) {return casinoGameAddress;}
+
     // Minting function available only to the deploying address.
     function mint(address to, uint256 amount) public onlyOwner {
         _mint(to, amount);

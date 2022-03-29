@@ -27,14 +27,14 @@ struct BlackjackGame {
 /* The Blackjack contract defines specific state variables
 *  and functions for a user to play Blackjack at the Casino.
 */
-contract Blackjack is Ownable, CasinoGame {
+abstract contract Blackjack is Ownable, CasinoGame {
 
     // State variables
     mapping (address => bool) private isPlayingRound;
     mapping (address => BlackjackGame) private bjGames;
     string[13] private cardValues = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
     string[4] private cardSuits = ["Diamonds", "Clubs", "Hearts", "Spades"];
-    uint8 private numDecks = 4;
+    uint8 private numDecks;
 
     // Events (to be emitted)
     event NewRound(address player, uint256 initialBet);
@@ -42,6 +42,11 @@ contract Blackjack is Ownable, CasinoGame {
     event DealerCardsUpdated(address player, BlackjackHand hand1, BlackjackHand hand2, BlackjackHand hand3, BlackjackHand hand4);
     event PlayerBetUpdated(address player, uint256 newBet);
     event RoundResult(address player, uint256 payout, uint256 winAmount);
+
+    // Constructor for initial state values
+    constructor(uint8 _numDecks) {
+        numDecks = _numDecks;
+    }
 
     // Updates the value of numDecks, the number of decks to play with
     function setNumDecks(uint8 _decks) public onlyOwner {
@@ -53,6 +58,9 @@ contract Blackjack is Ownable, CasinoGame {
     function setIsPlayingRound(address _address, bool _isPlaying) private {
         isPlayingRound[_address] = _isPlaying;
     }
+
+    // Getters
+    function getNumDecks() public view returns (uint8) {return numDecks;}
 
     // Handles the initial start of a blackjack round. It creates a new BlackjackGame with
     // a new player and dealer. It also sets the isPlayingRound and gameInProgress attributes

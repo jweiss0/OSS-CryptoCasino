@@ -29,6 +29,12 @@ contract CasinoGame is Ownable {
     event ContractPaid(address player, uint256 amount);
     event RewardPaid(address player, uint256 amount);
 
+    // Constructor for initial state values
+    constructor(uint256 _minBet, uint256 _maxBet) {
+        minimumBet = _minBet;
+        maximumBet = _maxBet;
+    }
+
     // Sets the address of the Casino contract.
     function setCasinoContractAddress(address _address) external onlyOwner {
         casinoContract = CasinoInterface(_address);
@@ -56,6 +62,12 @@ contract CasinoGame is Ownable {
     function setGameInProgress(address _address, bool _isPlaying) internal {
         gameInProgress[_address] = _isPlaying;
     }
+
+    // Getters.
+    function getCasinoContractAddress() public view returns (address) {return address(casinoContract);}
+    function getChipContractAddress() public view returns (address) {return address(chipContract);}
+    function getMinimumBet() public view returns (uint256) {return minimumBet;}
+    function getMaximumBet() public view returns (uint256) {return maximumBet;}
 
     // Rewards the user for the specified amount if they have won
     // anything from a casino game. Uses the Casino contract's payWinnings
