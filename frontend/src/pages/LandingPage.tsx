@@ -1,26 +1,30 @@
-import { Brand } from "../components/ui/Brand";
-import logo from "../logo.svg";
+import { Link } from "react-router-dom";
+import { WalletConnector } from "../components/WalletConnector";
 
 export const LandingPage = () => {
   return (
-    <main className="landing-page-container container min-vh-100 d-flex flex-column justify-content-center align-items-center gap-4 mx-auto w-100 text-center flex-lg-row justify-content-lg-between">
+    <main className="landing-page-container container min-vh-100 d-flex flex-column justify-content-center align-items-center gap-1 mx-auto w-100 text-center">
       <div>
         <div className="landing-page-image-container">
-          <img className="landing-page-image" src={logo} alt="" />
+          <img className="landing-page-image" src="/logo.png" alt="" />
         </div>
       </div>
       <div>
         <h1 className="landing-page-title">
-          <Brand />
+          A blockchain-based collection of casino games
         </h1>
-        <h2 className="landing-page-subtitle">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Vel
-          distinctio modi dolorem minima aliquam quos reprehenderit
-        </h2>
-        <a className="btn btn-primary" href="#">
-          hop in
-        </a>
+
+        <Link to="/blackjack" className="btn btn-outline-dark me-2">
+          Play Blackjack ♣️
+        </Link>
+        <Link to="/slots" className="btn btn-outline-dark me-2">
+          Play Slots 🎰
+        </Link>
+        <Link to="/roulette" className="btn btn-outline-dark">
+          Play Roulette 🎲
+        </Link>
       </div>
+      <WalletConnector/>
     </main>
   );
 };
