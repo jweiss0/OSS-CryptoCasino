@@ -19,8 +19,7 @@ This project is currently under development, utilizing React + Typescript for th
 - Navigate to project root folder
 - Run `$ npm install`
 
-Try running some of the following tasks with Hardhat:
-
+#### Hardhat Tasks
 ```shell
 npx hardhat accounts
 npx hardhat compile
@@ -39,7 +38,12 @@ npx prettier '**/*.{json,sol,md}' --write
 npx solhint 'contracts/**/*.sol'
 npx solhint 'contracts/**/*.sol' --fix
 ```
-#### Etherscan Verification
+
+#### Local Network Deployment
+- Run `$ npx hardhat node` in a terminal
+- Run `$ npx hardhat run --network localhost scripts/deploy.ts` in a different terminal
+
+<!-- #### Etherscan Verification
 To try out Etherscan verification, first deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
 
 In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. Enter your Etherscan API key, your Ropsten node URL (eg from Alchemy), and the private key of the account which will send the deployment transaction. With a valid .env file in place, first deploy your contract:
@@ -54,7 +58,7 @@ Then, copy the deployment address and paste it in to replace `DEPLOYED_CONTRACT_
 npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
 ```
 #### Performance Optimizations
-For faster runs of tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations).
+For faster runs of tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations). -->
 
 ## Team
 | **Name** | **GitHub Handle** |

@@ -4,7 +4,12 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface CasinoInterface {
-    function payWinnings(address to, uint256 amount) external;
+    function payWinnings(address _to, uint256 _amount) external;
+}
+
+interface ChipInterface {
+    function balanceOf(address account) external view returns (uint256);
+    function casinoTransferFrom(address _from, address _to, uint256 _value) external;
 }
 
 /* The CasinoGame contract defines top-level state variables
@@ -15,12 +20,56 @@ contract CasinoGame is Ownable {
 
     // State variables
     CasinoInterface private casinoContract;
+    ChipInterface private chipContract;
     uint256 internal minimumBet;
-    uint256 internal totalBet;
-    mapping (address => bool) private gameInProgress;
+    uint256 internal maximumBet;
+    mapping (address => bool) internal roundInProgress;
+    
+    // Events (to be emitted)
+    event ContractPaid(address player, uint256 amount);
+    event RewardPaid(address player, uint256 amount);
 
-    // Sets the address of the Casino contract
+    // Sets the address of the Casino contract.
     function setCasinoContractAddress(address _address) external onlyOwner {
         casinoContract = CasinoInterface(_address);
+    }
+
+    // Sets the address of the Chip contract.
+    function setChipContractAddress(address _address) external onlyOwner {
+        chipContract = ChipInterface(_address);
+    }
+
+
+    // Sets the minimum bet required for all casino games.
+    function setMinimumBet(uint256 _bet) external onlyOwner {
+        require(_bet >= 0, "Bet is too low.");
+        minimumBet = _bet;
+    }
+    
+    // Sets the maximum bet allowed for all casino games.
+    function setMaximumBet(uint256 _bet) external onlyOwner {
+        require(_bet >= 0, "Bet is too high.");
+        maximumBet = _bet;
+    }
+
+     // Sets the value of roundInProgress to true or false for a player.
+    function setRoundInProgress(address _address, bool _isPlaying) internal {
+        roundInProgress[_address] = _isPlaying;
+    }
+
+    // Rewards the user for the specified amount if they have won
+    // anything from a casino game. Uses the Casino contract's payWinnings
+    // function to achieve this.
+    function rewardUser(address _user, uint256 _amount) internal {
+        require(_amount >= 0, "Not enough to withdraw.");
+        casinoContract.payWinnings(_user, _amount);
+        emit RewardPaid(_user, _amount);
+    }
+
+    // Allows a user to place a bet by paying the contract the specified amount.
+    function payContract(address _address, uint256 _amount) public  {
+        require(chipContract.balanceOf(msg.sender) >= _amount, "Not enough tokens.");
+        chipContract.casinoTransferFrom(_address, address(casinoContract), _amount);
+        emit ContractPaid(msg.sender, _amount);
     }
 }
