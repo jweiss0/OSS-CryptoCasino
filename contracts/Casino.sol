@@ -18,18 +18,30 @@ contract Casino is Ownable {
 
     // State variables
     ChipInterface private chipContract;
-    address private casinoGameAddress;
+    address[] private casinoGameAddresses;
     mapping (address => bool) private freeTokensClaimed;
 
-    // Modifier to check if the calling address is the CasinoGame contract address
+    // Modifier to check if the calling address is a CasinoGame contract address
     modifier onlyCasinoGame {
-        require(msg.sender == casinoGameAddress, "Caller must be CasinoGame.");
+        bool isAddr = false;
+        for(uint i = 0; i < casinoGameAddresses.length; i++) {
+            if(msg.sender == casinoGameAddresses[i]) {
+                isAddr = true;
+                break;
+            }
+        }
+        require(isAddr, "Caller must be CasinoGame.");
         _;
     }
 
     // Sets the address of the Chip utility token contract
     function setChipContractAddress(address _address) external onlyOwner {
         chipContract = ChipInterface(_address);
+    }
+
+    // Add address of CasinoGame
+    function addCasinoGameContractAddress(address _address) external onlyOwner {
+        casinoGameAddresses.push(_address);
     }
     
     // Allows a user to claim 100 free utility tokens one time

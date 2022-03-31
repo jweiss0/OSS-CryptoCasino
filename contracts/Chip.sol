@@ -12,7 +12,6 @@ contract Chip is ERC20, Ownable {
 
     // State variables.
     address private casinoAddress;
-    address private casinoGameAddress;
 
     // Constructor mints 1000 for deploying wallet.
     constructor() ERC20("Chip", "OSSC") {
@@ -25,19 +24,9 @@ contract Chip is ERC20, Ownable {
         _;
     }
 
-    modifier onlyCasinoGame {
-        require(msg.sender == casinoGameAddress, "Caller must be CasinoGame.");
-        _;   
-    }
-
     // Set the address of the Casino contract.
     function setCasinoAddress(address _addr) external onlyOwner {
         casinoAddress = _addr;
-    }
-
-    // Set the address of the CasinoGame contract.
-    function setCasinoGameAddress(address _addr) external onlyOwner {
-        casinoGameAddress = _addr;
     }
 
     // Minting function available only to the deploying address.

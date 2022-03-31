@@ -23,7 +23,7 @@ contract CasinoGame is Ownable {
     ChipInterface private chipContract;
     uint256 internal minimumBet;
     uint256 internal maximumBet;
-    mapping (address => bool) internal gameInProgress;
+    mapping (address => bool) internal roundInProgress;
     
     // Events (to be emitted)
     event ContractPaid(address player, uint256 amount);
@@ -48,13 +48,13 @@ contract CasinoGame is Ownable {
     
     // Sets the maximum bet allowed for all casino games.
     function setMaximumBet(uint256 _bet) external onlyOwner {
-        require(_bet <= maximumBet, "Bet is too high.");
+        require(_bet >= 0, "Bet is too high.");
         maximumBet = _bet;
     }
 
-     // Sets the value of gameInProgress to true or false for a player.
-    function setGameInProgress(address _address, bool _isPlaying) internal {
-        gameInProgress[_address] = _isPlaying;
+     // Sets the value of roundInProgress to true or false for a player.
+    function setRoundInProgress(address _address, bool _isPlaying) internal {
+        roundInProgress[_address] = _isPlaying;
     }
 
     // Rewards the user for the specified amount if they have won
