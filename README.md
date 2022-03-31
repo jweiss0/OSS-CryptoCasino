@@ -7,7 +7,7 @@ _Crypto Casino_ is a web-based game, built on blockchain technology. It will uti
 Ultimately, we plan to use this project as a learning experience for blockchain development. The project is licensed under [GPL v3.0](https://github.com/jweiss0/OSS-CryptoCasino/blob/main/LICENSE) to ensure it maintains an open source status and can be used by others in the community to learn blockchain development. Much of the project is not set in stone, leaving it up to the developers and community to modify the plans for the project as they see fit.
 
 ## Development
-This project is currently under development, utilizing React + Typescript for the front end with Solidity + Hardhat for the smart contract back end. We plan to deploy the smart contracts to the _Avalanche_ network, but this is subject to change.
+This project is currently under development, utilizing React + Typescript for the front end with Solidity + Hardhat for the smart contract back end. We plan to deploy the smart contracts to the _Polygon_ network, but this is subject to change. For testing purposes, the Localhost network and Matic Mumbai network are used.
 ### Front End
 #### Running Local Project in Development Mode
 - Navigate to the `frontend` folder
