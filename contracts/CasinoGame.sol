@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface CasinoInterface {
     function payWinnings(address _to, uint256 _amount) external;
+    function transferFrom(address _from, uint256 _amount) external;
 }
 
 interface ChipInterface {
@@ -57,6 +58,12 @@ contract CasinoGame is Ownable {
         roundInProgress[_address] = _isPlaying;
     }
 
+    // Gets the minimum bet required.
+    function getMinimumBet() external view returns (uint256) { return minimumBet; }
+
+    // Gets the maximum bet required.
+    function getMaximumBet() external view returns (uint256) { return maximumBet; }
+
     // Rewards the user for the specified amount if they have won
     // anything from a casino game. Uses the Casino contract's payWinnings
     // function to achieve this.
@@ -67,9 +74,10 @@ contract CasinoGame is Ownable {
     }
 
     // Allows a user to place a bet by paying the contract the specified amount.
-    function payContract(address _address, uint256 _amount) public  {
-        require(chipContract.balanceOf(msg.sender) >= _amount, "Not enough tokens.");
-        chipContract.casinoTransferFrom(_address, address(casinoContract), _amount);
-        emit ContractPaid(msg.sender, _amount);
+    function payContract(address _address, uint256 _amount) internal  {
+        require(chipContract.balanceOf(_address) >= _amount, "Not enough tokens.");
+        // chipContract.casinoTransferFrom(_address, address(casinoContract), _amount);
+        casinoContract.transferFrom(_address, _amount);
+        emit ContractPaid(_address, _amount);
     }
 }

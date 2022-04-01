@@ -12,7 +12,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 import { InjectedConnector } from '@web3-react/injected-connector';
 
 // 80001 = Matic Mumbai Testnet
-// 8545 = Localhost Testnet
+// 31337/1337 = Localhost Testnet
 export const injected = new InjectedConnector({
-  supportedChainIds: [80001, 8545]
+  supportedChainIds: [80001, 31337, 1337]
 });
