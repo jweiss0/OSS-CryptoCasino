@@ -23,12 +23,20 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // Go to https://hardhat.org/config/ to learn more
 
 const config: HardhatUserConfig = {
-    solidity: "0.8.4",
+    solidity: {
+        version: "0.8.4",
+        settings: {
+            optimizer: {
+                enabled: true,
+                runs: 1000
+            },
+        }
+    },
     paths: {
         artifacts: './frontend/src/artifacts'
     },
     networks: {
-        matic_mumbai: {
+        matic: {
             url: "https://rpc-mumbai.maticvigil.com",
             accounts: process.env.MUMBAI_PRIVATE_KEY !== undefined ? [process.env.MUMBAI_PRIVATE_KEY] : [],
         },

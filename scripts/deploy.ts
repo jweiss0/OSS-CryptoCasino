@@ -37,6 +37,7 @@ async function main() {
     
     // Set values in Casino contract
     await dCasino.setChipContractAddress(dChip.address);
+    await dCasino.setDeployerAddress(await dCasino.signer.getAddress());
     await dCasino.addCasinoGameContractAddress(dBlackjack.address);
     console.log("Set initial state values for Casino contract");
 

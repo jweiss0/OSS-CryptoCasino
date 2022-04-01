@@ -18,6 +18,7 @@ contract Casino is Ownable {
 
     // State variables
     ChipInterface private chipContract;
+    address private deployerAddress;
     address[] private casinoGameAddresses;
     mapping (address => bool) private freeTokensClaimed;
 
@@ -34,6 +35,11 @@ contract Casino is Ownable {
         _;
     }
 
+    // Sets the address of the deployer wallet
+    function setDeployerAddress(address _address) external onlyOwner {
+        deployerAddress = _address;
+    }
+
     // Sets the address of the Chip utility token contract
     function setChipContractAddress(address _address) external onlyOwner {
         chipContract = ChipInterface(_address);
@@ -43,23 +49,34 @@ contract Casino is Ownable {
     function addCasinoGameContractAddress(address _address) external onlyOwner {
         casinoGameAddresses.push(_address);
     }
+
+    // Checks if a user has already claimed free utility tokens
+    function alreadyClaimedTokens() external view returns (bool) {
+        return freeTokensClaimed[msg.sender];
+    }
     
     // Allows a user to claim 100 free utility tokens one time
-    function claimInitialTokens() public {
+    function claimInitialTokens() external {
         // Check that the user has not already claimed their free tokens
         require(freeTokensClaimed[msg.sender] == false, "Already claimed free tokens.");
         // Mint the tokens for the user using the Casino contract function
-        chipContract.casinoMint(msg.sender, 10);
+        chipContract.casinoMint(msg.sender, 100);
         // Mark the user's first time chips as claimed
         freeTokensClaimed[msg.sender] = true;
     }
 
     // Pays a certain amount of winnings to the specified address. If the Casino
-    // contract does not have enough Chips, 1000 more are minted for the Casino.
+    // contract does not have enough Chips, more are minted for the Casino.
     function payWinnings(address _to, uint256 _amount) external onlyCasinoGame {
-        if(chipContract.balanceOf(address(this)) <= _amount) {
-            chipContract.casinoMint(address(this), 100);
+        if(chipContract.balanceOf(deployerAddress) <= _amount) {
+            chipContract.casinoMint(deployerAddress, _amount * 10);
         }
-        chipContract.casinoTransferFrom(address(this), _to, _amount);
+        chipContract.casinoTransferFrom(deployerAddress, _to, _amount);
+    }
+
+    // Takes a certain amount from the paying wallet and transfers it to
+    // the casino contract.
+    function transferFrom(address _from, uint256 _amount) external onlyCasinoGame {
+        chipContract.casinoTransferFrom(_from, deployerAddress, _amount);
     }
 }

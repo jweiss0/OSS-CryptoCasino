@@ -14,7 +14,7 @@ contract Chip is ERC20, Ownable {
     address private casinoAddress;
 
     // Constructor mints 1000 for deploying wallet.
-    constructor() ERC20("Chip", "OSSC") {
+    constructor() ERC20("Chip", "CHIP") {
         _mint(msg.sender, 100 * 10 ** decimals());
     }
 
@@ -42,7 +42,7 @@ contract Chip is ERC20, Ownable {
     // Allows the Casino contract to transfer tokens from a user to the contract.
     // Also allows for the transfer of tokens from the contract to a user.
     function casinoTransferFrom(address _from, address _to, uint256 _value) external onlyCasino {
-        approve(_from, _value);
+        // approve(_from, _value);
         transferFrom(_from, _to, _value);
     }
 }

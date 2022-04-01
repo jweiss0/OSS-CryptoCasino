@@ -11,9 +11,9 @@ export function Blackjack(): ReactElement {
 
     const [signer, setSigner] = useState<Signer>();
     const [blackjackContract, setBlackjackContract] = useState<Contract>();
-    const [minBet, setMinBet] = useState<Number>(0);
-    const [maxBet, setMaxBet] = useState<Number>(0);
-    const [bet, setBet] = useState<Number>(0);
+    const [minBet, setMinBet] = useState<Number>(1);
+    const [maxBet, setMaxBet] = useState<Number>(500);
+    const [bet, setBet] = useState<Number>(1);
 
     // Get connected wallet information
     useEffect((): void => {
@@ -36,7 +36,10 @@ export function Blackjack(): ReactElement {
         const blackjackContractInstance = new ethers.Contract(BlackjackContractAddr, BlackjackArtifacts.abi, signer);
         setBlackjackContract(blackjackContractInstance);
 
+        console.log("Connected to Blackjack contract.");
+
     }, [blackjackContract, signer]);
+
 
     // Get minimum and maximum bet values
     useEffect((): void => {
@@ -45,7 +48,7 @@ export function Blackjack(): ReactElement {
                 return;
             }
 
-            const _minBet = await blackjackContract.getMinBet();
+            const _minBet = await blackjackContract.getMinimumBet();
             if (_minBet !== minBet) {
                 setMinBet(_minBet);
             }
@@ -56,7 +59,7 @@ export function Blackjack(): ReactElement {
                 return;
             }
 
-            const _maxBet = await blackjackContract.getMaxBet();
+            const _maxBet = await blackjackContract.getMaximumBet();
             if (_maxBet !== maxBet) {
                 setMaxBet(_maxBet);
             }
@@ -66,6 +69,20 @@ export function Blackjack(): ReactElement {
         getMaxBet();
     }, [blackjackContract, minBet, maxBet]);
 
+    // Event listener for ContractPaid event (CasinoGame) [UNTESTED]
+    const contractPaidEvent = (player: string, amount: Number): void => {
+        console.log("Contract Paid Event:");
+        console.log(player);
+        console.log(amount);
+    }
+    useEffect((): () => void => {
+        blackjackContract?.on('ContractPaid', contractPaidEvent);
+
+        return () => {
+            blackjackContract?.off('ContractPaid', contractPaidEvent);
+        };
+    }, [blackjackContract]);
+
     // Handle "Play Round" button click
     async function handlePlayRound(): Promise<void> {
         if (!blackjackContract)
@@ -73,6 +90,7 @@ export function Blackjack(): ReactElement {
 
         if (bet < minBet || bet > maxBet) {
             window.alert('Error!\n\nBet must be between ' +  minBet + ' and ' + maxBet + '.');
+            return;
         }
         try {
             const playRoundTxn = await blackjackContract.playRound(bet);
