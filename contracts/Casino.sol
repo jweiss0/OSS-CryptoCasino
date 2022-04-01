@@ -51,8 +51,8 @@ contract Casino is Ownable {
     }
 
     // Checks if a user has already claimed free utility tokens
-    function alreadyClaimedTokens() external view returns (bool) {
-        return freeTokensClaimed[msg.sender];
+    function alreadyClaimedTokens(address _address) external view returns (bool) {
+        return freeTokensClaimed[_address];
     }
     
     // Allows a user to claim 100 free utility tokens one time

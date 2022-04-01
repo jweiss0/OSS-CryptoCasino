@@ -46,9 +46,10 @@ export function ClaimChips(): ReactElement {
                 return;
             }
 
-            // console.log(await signer.getAddress().then((addr) => {return addr;}));
-            const _alreadyClaimed = await casinoContract.alreadyClaimedTokens();
+            const _alreadyClaimed = await casinoContract.alreadyClaimedTokens(await signer.getAddress().then((addr) => {return addr;}));
             if (_alreadyClaimed !== alreadyClaimed) {
+                if(_alreadyClaimed)
+                    console.log("User has already claimed free tokens.");
                 setAlreadyClaimed(_alreadyClaimed);
             }
         }
@@ -68,6 +69,7 @@ export function ClaimChips(): ReactElement {
         try {
             const claimChipsTxn = await casinoContract.claimInitialTokens();
             await claimChipsTxn.wait();
+            setAlreadyClaimed(true);
         } catch (error: any) {
             window.alert('Error!' + (error && error.message ? `\n\n${error.message}` : ''));
         }
