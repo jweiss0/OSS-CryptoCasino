@@ -27,9 +27,10 @@ async function main() {
 
     // Deploy Blackjack contract
     const fBlackjack = await ethers.getContractFactory("Blackjack");
-    const dBlackjack = await fBlackjack.deploy();
+    const dBlackjack = await fBlackjack.deploy(1, 2, 4);
     await dBlackjack.deployed();
     console.log("Blackjack deployed to:", dBlackjack.address);
+    console.log("Set initial min and max bets for Blackjack contract");
 
     // Set values in Chip contract
     await dChip.setCasinoAddress(dCasino.address);
@@ -40,10 +41,6 @@ async function main() {
     await dCasino.setDeployerAddress(await dCasino.signer.getAddress());
     await dCasino.addCasinoGameContractAddress(dBlackjack.address);
     console.log("Set initial state values for Casino contract");
-
-    await dBlackjack.setMinimumBet(1);
-    await dBlackjack.setMaximumBet(500);
-    console.log("Set initial min and max bets for Blackjack contract");
 }
 
 // We recommend this pattern to be able to use async/await everywhere

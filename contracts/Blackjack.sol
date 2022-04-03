@@ -33,7 +33,7 @@ contract Blackjack is Ownable, CasinoGame {
     mapping (address => BlackjackGame) private bjGames;
     string[13] private cardValues = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
     string[4] private cardSuits = ["Diamonds", "Clubs", "Hearts", "Spades"];
-    uint8 private numDecks = 4;
+    uint8 private numDecks;
 
     // Events (to be emitted)
     event NewRound(address player, uint256 initialBet);
@@ -42,11 +42,24 @@ contract Blackjack is Ownable, CasinoGame {
     event PlayerBetUpdated(address player, uint256 newBet);
     event RoundResult(address player, uint256 payout, uint256 winAmount);
 
+    // Constructor for initial state values, including calling parent constructor
+    constructor(uint256 _minBet, uint256 _maxBet, uint8 _numDecks) CasinoGame(_minBet, _maxBet) {
+        numDecks = _numDecks;
+    }
+
     // Updates the value of numDecks, the number of decks to play with
     function setNumDecks(uint8 _decks) public onlyOwner {
         require(_decks > 0, "At least one deck required.");
         numDecks = _decks;
     }
+
+    // Sets the value of isPlayingRound to true or false for a player
+    // function setIsPlayingRound(address _address, bool _isPlaying) private {
+    //     isPlayingRound[_address] = _isPlaying;
+    // }
+
+    // Getters
+    function getNumDecks() public view returns (uint8) {return numDecks;}
 
     // Handles the initial start of a blackjack round. It creates a new BlackjackGame with
     // a new player and dealer. It also sets the isPlayingRound and gameInProgress attributes
