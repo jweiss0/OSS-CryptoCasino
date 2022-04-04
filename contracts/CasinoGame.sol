@@ -80,9 +80,8 @@ abstract contract CasinoGame is Ownable {
     }
 
     // Allows a user to place a bet by paying the contract the specified amount.
-    function payContract(address _address, uint256 _amount) internal  {
+    function payContract(address _address, uint256 _amount) internal {
         require(chipContract.balanceOf(_address) >= _amount, "Not enough tokens.");
-        // chipContract.casinoTransferFrom(_address, address(casinoContract), _amount);
         casinoContract.transferFrom(_address, _amount);
         emit ContractPaid(_address, _amount);
     }

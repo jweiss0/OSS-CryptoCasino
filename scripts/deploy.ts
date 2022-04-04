@@ -13,7 +13,7 @@ async function main() {
     // manually to make sure everything is compiled
     // await hre.run('compile');
 
-    //  Deploy  Chip contract
+    //  Deploy Chip contract
     const fChip = await ethers.getContractFactory("Chip");
     const dChip = await fChip.deploy();
     await dChip.deployed();
@@ -38,9 +38,13 @@ async function main() {
     
     // Set values in Casino contract
     await dCasino.setChipContractAddress(dChip.address);
-    await dCasino.setDeployerAddress(await dCasino.signer.getAddress());
     await dCasino.addCasinoGameContractAddress(dBlackjack.address);
     console.log("Set initial state values for Casino contract");
+
+    // Set values in Blackjack contract
+    await dBlackjack.setCasinoContractAddress(dCasino.address);
+    await dBlackjack.setChipContractAddress(dChip.address);
+    console.log("Set initial state values for Blackjack contract");
 }
 
 // We recommend this pattern to be able to use async/await everywhere

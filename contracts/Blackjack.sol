@@ -53,11 +53,6 @@ contract Blackjack is Ownable, CasinoGame {
         numDecks = _decks;
     }
 
-    // Sets the value of isPlayingRound to true or false for a player
-    // function setIsPlayingRound(address _address, bool _isPlaying) private {
-    //     isPlayingRound[_address] = _isPlaying;
-    // }
-
     // Getters
     function getNumDecks() public view returns (uint8) {return numDecks;}
 

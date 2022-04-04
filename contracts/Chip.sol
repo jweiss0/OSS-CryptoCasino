@@ -13,10 +13,7 @@ contract Chip is ERC20, Ownable {
     // State variables.
     address private casinoAddress;
 
-    // Constructor mints 1000 for deploying wallet.
-    constructor() ERC20("Chip", "CHIP") {
-        _mint(msg.sender, 100 * 10 ** decimals());
-    }
+    constructor() ERC20("Chip", "CHIP") {}
 
     // Modifier to check if the calling address is the Casino contract address.
     modifier onlyCasino {
@@ -39,13 +36,12 @@ contract Chip is ERC20, Ownable {
 
     // Minting function available only to the Casino contract address.
     function casinoMint(address to, uint256 amount) external onlyCasino {
-        _mint(to, amount * 10 ** decimals());
+        _mint(to, amount);
     }
 
     // Allows the Casino contract to transfer tokens from a user to the contract.
     // Also allows for the transfer of tokens from the contract to a user.
     function casinoTransferFrom(address _from, address _to, uint256 _value) external onlyCasino {
-        // approve(_from, _value);
         transferFrom(_from, _to, _value);
     }
 }
