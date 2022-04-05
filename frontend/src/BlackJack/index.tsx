@@ -1,4 +1,4 @@
-export{};
+import "./style.css";
 /**
  * Objects for cards and deck of cards
  */
@@ -33,7 +33,7 @@ export{};
              this.cardVal = value;
          }
      }
-     getVal(){
+     get cardValue(){
          return this.cardVal;
      }
  }
@@ -85,7 +85,7 @@ export{};
      //add a card to the player's hand, update hand value
      addCard(card: Card){
         this.hand.push(card);
-        this.handValue += card.getVal();
+        this.handValue += card.cardValue;
      }
      //return true if a player "busts"(gets hand value over 21)
      bust(){
@@ -240,3 +240,12 @@ function restart(){
     //dealersHand.innerHTML += `<div class="card">${dealer.hand[0].value + " of " + dealer.hand[0].suit}</div>`;
     //dealersHand.innerHTML += `<div class="card">${dealer.hand[1].value + " of " + dealer.hand[1].suit}</div>`;
 }
+
+function Blackjack(){
+    return(
+        <h1>Blackjack</h1>
+    );
+}
+
+
+export default Blackjack;
