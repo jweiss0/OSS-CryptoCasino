@@ -10,7 +10,6 @@ import { BlackjackHand } from '../../../utils/types';
 export function Blackjack(): ReactElement {
     const context = useWeb3React<Provider>();
     const { library, active } = context;
-
     const [signer, setSigner] = useState<Signer>();
     const [blackjackContract, setBlackjackContract] = useState<Contract>();
     const [chipContract, setChipContract] = useState<Contract>();
@@ -18,12 +17,11 @@ export function Blackjack(): ReactElement {
     const [maxBet, setMaxBet] = useState<string>("50000000000000000000");
     const [bet, setBet] = useState<string>("1000000000000000000");
     const [inProgress, setInProgress] = useState<boolean>(false);
+    const [playerTurn, setPlayerTurn] = useState<boolean>(false);
     const [playerHand1, setPlayerHand1] = useState<BlackjackHand>();
     const [playerHand2, setPlayerHand2] = useState<BlackjackHand>();
     const [playerHand3, setPlayerHand3] = useState<BlackjackHand>();
     const [playerHand4, setPlayerHand4] = useState<BlackjackHand>();
-
-    // const [allowance, setAllowance] = useState<string>("0");
 
     // Get connected wallet information
     useEffect((): void => {
@@ -107,15 +105,30 @@ export function Blackjack(): ReactElement {
         setPlayerHand3(newPlayerHand3);
         setPlayerHand4(newPlayerHand4);
     }
+    const playerTurnEndEvent = (player: string): void => {
+        console.log("Player Turn Ended.");
+        setPlayerTurn(false);
+    }
     useEffect((): () => void => {
-        blackjackContract?.on('ContractPaid', contractPaidEvent);
-        blackjackContract?.on('PlayerCardsUpdated', playerCardsUpdatedEvent);
+        let wallet;
+        async function getWalletAddress(): Promise<void> {
+            if(!signer)
+                return;
+            const _wallet: string = await signer?.getAddress();
+            wallet = _wallet;
+        }
+
+        getWalletAddress();
+        blackjackContract?.on(blackjackContract?.filters.ContractPaid(wallet, null), contractPaidEvent);
+        blackjackContract?.on(blackjackContract?.filters.PlayerCardsUpdated(wallet, null, null, null, null), playerCardsUpdatedEvent);
+        blackjackContract?.on(blackjackContract?.filters.PlayerTurnEnd(wallet), playerTurnEndEvent);
 
         return () => {
             blackjackContract?.off('ContractPaid', contractPaidEvent);
             blackjackContract?.off('PlayerCardsUpdated', playerCardsUpdatedEvent);
+            blackjackContract?.off('PlayerTurnEnd', playerTurnEndEvent);
         };
-    }, [blackjackContract]);
+    }, [blackjackContract, signer]);
 
     // Handle "Play Round" button click
     async function handlePlayRound(): Promise<void> {
@@ -144,6 +157,41 @@ export function Blackjack(): ReactElement {
         }
 
         setInProgress(true);
+        setPlayerTurn(true);
+    }
+
+    async function handleHitPlayer(): Promise<void> {
+        if(!blackjackContract)
+            return;
+
+        if(!playerTurn) {
+            window.alert('Error!\n\nIt is no longer your turn!');
+            return;
+        }
+
+        try {
+            const hitPlayerTxn = await blackjackContract.hitPlayer(0);
+            await hitPlayerTxn.wait();
+        } catch (error: any) {
+            window.alert('Error!' + (error && error.message ? `\n\n${error.message}` : ''));
+        }
+    }
+
+    async function handleStandPlayer(): Promise<void> {
+        if(!blackjackContract)
+            return;
+
+        if(!playerTurn) {
+            window.alert('Error!\n\nIt is no longer your turn!');
+            return;
+        }
+
+        try {
+            const standPlayerTxn = await blackjackContract.standPlayer();
+            await standPlayerTxn.wait();
+        } catch (error: any) {
+            window.alert('Error!' + (error && error.message ? `\n\n${error.message}` : ''));
+        }
     }
 
     return (
@@ -160,6 +208,31 @@ export function Blackjack(): ReactElement {
                 >
                     Play Round
                 </button>
+            : <></>
+            }
+            {playerTurn ? 
+                <div>
+                    <button
+                        disabled={!active || !blackjackContract ? true : false}
+                        style={{
+                            cursor: !active || !blackjackContract ? 'not-allowed' : 'pointer',
+                            borderColor: !active || !blackjackContract ? 'unset' : 'blue'
+                        }}
+                        onClick={handleHitPlayer}
+                    >
+                        Hit
+                    </button>
+                    <button
+                        disabled={!active || !blackjackContract ? true : false}
+                        style={{
+                            cursor: !active || !blackjackContract ? 'not-allowed' : 'pointer',
+                            borderColor: !active || !blackjackContract ? 'unset' : 'blue'
+                        }}
+                        onClick={handleStandPlayer}
+                    >
+                        Stand
+                    </button>
+                </div>
             : <></>
             }
             

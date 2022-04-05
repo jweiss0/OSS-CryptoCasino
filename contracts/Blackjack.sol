@@ -41,6 +41,7 @@ contract Blackjack is Ownable, CasinoGame {
     event PlayerCardsUpdated(address player, BlackjackHand hand1, BlackjackHand hand2, BlackjackHand hand3, BlackjackHand hand4);
     event DealerCardsUpdated(address player, BlackjackHand hand1, BlackjackHand hand2, BlackjackHand hand3, BlackjackHand hand4);
     event PlayerBetUpdated(address player, uint256 newBet);
+    event PlayerTurnEnd(address player);
     event RoundResult(address player, uint256 payout, uint256 winAmount);
 
     // Constructor for initial state values, including calling parent constructor
@@ -264,14 +265,13 @@ contract Blackjack is Ownable, CasinoGame {
         doublePlayerBet(msg.sender, game, handInd);
 
         // Hit a single time, then end the player's turn
-        hitPlayer(msg.sender, handInd);
+        hitPlayerAuto(msg.sender, handInd);
         emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.hands[0], bjGames[msg.sender].player.hands[1],
             bjGames[msg.sender].player.hands[2], bjGames[msg.sender].player.hands[3]);
         endPlayerTurn(msg.sender);
     }
 
-    // Handles dealing another card to the player.
-    function hitPlayer(address _playerAddress, uint8 handInd) public {
+    function hitPlayerAuto(address _playerAddress, uint8 handInd) private {
         require(roundInProgress[_playerAddress] == true, "Not playing round.");
         
         BlackjackGame storage game = bjGames[_playerAddress];
@@ -288,6 +288,34 @@ contract Blackjack is Ownable, CasinoGame {
         uint32 handVal = getLowestHandValue(game.player.hands[handInd]);
         if(handVal  > 21)
            game.player.hands[handInd].isBust = true;
+        endPlayerTurn(msg.sender);
+    }
+
+    // Handles dealing another card to the player.
+    function hitPlayer(uint8 handInd) public {
+        require(roundInProgress[msg.sender] == true, "Not playing round.");
+        
+        BlackjackGame storage game = bjGames[msg.sender];
+        require(game.player.hands[handInd].cVals.length >= 2, "Not yet dealt cards.");
+        require(!game.player.hands[handInd].isBust, "Already lost round.");
+        require(!game.player.hands[handInd].isBlackjack, "Already won round.");
+        require(!game.player.hands[handInd].isDoubledDown, "Already doubled down.");
+
+        dealSingleCard(game, game.player.hands[handInd]);
+        emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.hands[0], bjGames[msg.sender].player.hands[1],
+            bjGames[msg.sender].player.hands[2], bjGames[msg.sender].player.hands[3]);
+
+        // Check if player has gone over 21
+        uint32 handVal = getLowestHandValue(game.player.hands[handInd]);
+        if(handVal  > 21) {
+           game.player.hands[handInd].isBust = true;
+            endPlayerTurn(msg.sender);
+        }
+    }
+
+    function standPlayer() public {
+        require(roundInProgress[msg.sender] == true, "Not playing round.");
+        endPlayerTurn(msg.sender);
     }
 
     // Handles finishing a player's turn.
@@ -296,6 +324,8 @@ contract Blackjack is Ownable, CasinoGame {
 
         BlackjackGame storage game = bjGames[_playerAddress];
         require(game.player.numHands > 0 && game.player.hands[0].cVals.length >= 2, "Not yet dealt cards.");
+
+        emit PlayerTurnEnd(_playerAddress);
         
         // Begin dealer's turn
         dealerPlay(_playerAddress);
@@ -448,7 +478,7 @@ contract Blackjack is Ownable, CasinoGame {
     // Returns the integer value of a card. Returns 0 for Ace. Returns type(uint16).max if 
     // _card is uninitialized.
     function getCardValue(string memory _value) public pure returns (uint16) {
-        if(bytes(_value).length == 0) {
+        if(bytes(_value).length > 0) {
             if(isAlphaUpper(_value)) {
                 if(keccak256(abi.encodePacked((_value))) == keccak256(abi.encodePacked(("A"))))
                     return 0;
