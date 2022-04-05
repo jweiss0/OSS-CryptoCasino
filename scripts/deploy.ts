@@ -27,7 +27,7 @@ async function main() {
 
     // Deploy Blackjack contract
     const fBlackjack = await ethers.getContractFactory("Blackjack");
-    const dBlackjack = await fBlackjack.deploy(1, 2, 4);
+    const dBlackjack = await fBlackjack.deploy("1000000000000000000", "50000000000000000000", 4); // minbet 1 in wei, maxbet 50 in wei
     await dBlackjack.deployed();
     console.log("Blackjack deployed to:", dBlackjack.address);
     console.log("Set initial min and max bets for Blackjack contract");

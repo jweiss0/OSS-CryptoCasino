@@ -34,6 +34,7 @@ contract Blackjack is Ownable, CasinoGame {
     string[13] private cardValues = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
     string[4] private cardSuits = ["Diamonds", "Clubs", "Hearts", "Spades"];
     uint8 private numDecks;
+    uint256 private nonce = 0;
 
     // Events (to be emitted)
     event NewRound(address player, uint256 initialBet);
@@ -78,6 +79,19 @@ contract Blackjack is Ownable, CasinoGame {
 
         // Handle initial dealing of cards
         deal(msg.sender);
+    }
+
+    // ******* FOR TESTING PURPOSES *****
+    function getHand(address _player) public view returns (string[] memory, string[] memory) {
+        return (bjGames[_player].player.hands[0].cVals, bjGames[_player].player.hands[0].cSuits);
+    }
+
+    // Emits the current hands for the round
+    function emitRoundHands(address _player) external {
+        emit PlayerCardsUpdated(_player, bjGames[_player].player.hands[0], bjGames[_player].player.hands[1],
+            bjGames[_player].player.hands[2], bjGames[_player].player.hands[3]);
+        emit DealerCardsUpdated(_player, bjGames[_player].dealer.hands[0], bjGames[_player].dealer.hands[1],
+            bjGames[_player].dealer.hands[2], bjGames[_player].dealer.hands[3]);
     }
 
     // Handles the end of a blackjack round. It sets the isPlayingRound and gameInProgress
@@ -271,7 +285,7 @@ contract Blackjack is Ownable, CasinoGame {
             bjGames[_playerAddress].player.hands[2], bjGames[_playerAddress].player.hands[3]);
 
         // Check if player has gone over 21
-        uint16 handVal = getLowestHandValue(game.player.hands[handInd]);
+        uint32 handVal = getLowestHandValue(game.player.hands[handInd]);
         if(handVal  > 21)
            game.player.hands[handInd].isBust = true;
     }
@@ -297,7 +311,7 @@ contract Blackjack is Ownable, CasinoGame {
         while(!game.dealer.hands[0].isBust && getLowestHandValue(game.dealer.hands[0]) < 17) {
             hitDealer(_playerAddress, game);
             // Check if dealer has gone over 21 or has hit 21
-            uint16 handVal = getLowestHandValue(game.dealer.hands[0]);
+            uint32 handVal = getLowestHandValue(game.dealer.hands[0]);
             if(handVal  > 21) {
             game.dealer.hands[0].isBust = true;
             } else if(handVal >= 17) {
@@ -395,8 +409,8 @@ contract Blackjack is Ownable, CasinoGame {
     }
 
     // Returns the lowest numerical value of a player's hand. Always assumes Ace is 1.
-    function getLowestHandValue(BlackjackHand memory _hand) private pure returns (uint16) {
-        uint16 totalVal = 0;
+    function getLowestHandValue(BlackjackHand memory _hand) private pure returns (uint32) {
+        uint32 totalVal = 0;
         for (uint i = 0; i < _hand.cVals.length; i++) {
             uint16 cardVal = getCardValue(_hand.cVals[i]);
             if(cardVal == 0)
@@ -486,14 +500,16 @@ contract Blackjack is Ownable, CasinoGame {
     // Generates a random number, 0 to _upper (non-inclusive), to be used for card selection.
     // Not truly random, but good enough for the needs of this project.
     // A mainnet application should use something like Chainlink VRF for this task instead.
-    function rand(uint256 _upper) public view returns(uint256) {
+    function rand(uint256 _upper) public returns(uint256) {
     uint256 seed = uint256(keccak256(abi.encodePacked(
         block.timestamp + block.difficulty +
         ((uint256(keccak256(abi.encodePacked(block.coinbase)))) / (block.timestamp)) +
         block.gaslimit + 
         ((uint256(keccak256(abi.encodePacked(msg.sender)))) / (block.timestamp)) +
-        block.number
+        block.number + nonce
     )));
+
+    nonce++;
 
     return (seed - ((seed / _upper) * _upper));
 }

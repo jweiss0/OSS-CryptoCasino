@@ -69,6 +69,7 @@ abstract contract CasinoGame is Ownable {
     function getChipContractAddress() public view returns (address) {return address(chipContract);}
     function getMinimumBet() public view returns (uint256) {return minimumBet;}
     function getMaximumBet() public view returns (uint256) {return maximumBet;}
+    function getRoundInProgress(address _address) public view returns (bool) {return roundInProgress[_address];}
 
     // Rewards the user for the specified amount if they have won
     // anything from a casino game. Uses the Casino contract's payWinnings
