@@ -6,6 +6,7 @@ import BlackjackArtifacts from '../../../artifacts/contracts/Blackjack.sol/Black
 import ChipArtifacts from '../../../artifacts/contracts/Chip.sol/Chip.json';
 import { Provider } from '../../../utils/provider';
 import { BlackjackHand } from '../../../utils/types';
+import './Blackjack.css';
 
 export function Blackjack(): ReactElement {
     const context = useWeb3React<Provider>();
@@ -13,9 +14,9 @@ export function Blackjack(): ReactElement {
     const [signer, setSigner] = useState<Signer>();
     const [blackjackContract, setBlackjackContract] = useState<Contract>();
     const [chipContract, setChipContract] = useState<Contract>();
-    const [minBet, setMinBet] = useState<string>("1000000000000000000");
-    const [maxBet, setMaxBet] = useState<string>("50000000000000000000");
-    const [bet, setBet] = useState<string>("1000000000000000000");
+    const [minBet, setMinBet] = useState<number>(1); // not stored in wei
+    const [maxBet, setMaxBet] = useState<number>(50);  // not stored in wei
+    const [bet, setBet] = useState<number>(1);  // not stored in wei
     const [inProgress, setInProgress] = useState<boolean>(false);
     const [playerTurn, setPlayerTurn] = useState<boolean>(false);
     const [playerHand1, setPlayerHand1] = useState<BlackjackHand>();
@@ -140,9 +141,10 @@ export function Blackjack(): ReactElement {
             return;
         }
 
+        const weiBet: string = bet.toString() + "000000000000000000"; // Convert bet to wei
         // First approve contract to take CHIPs on user's behalf
         try {
-            const approveTxn = await chipContract.approve(CasinoContractAddr, bet);
+            const approveTxn = await chipContract.approve(CasinoContractAddr, weiBet); 
             await approveTxn.wait();
         } catch (error: any) {
             window.alert('Error!' + (error && error.message ? `\n\n${error.message}` : ''));
@@ -150,7 +152,7 @@ export function Blackjack(): ReactElement {
 
         // Then call playRound function
         try {
-            const playRoundTxn = await blackjackContract.playRound(bet);
+            const playRoundTxn = await blackjackContract.playRound(weiBet);
             await playRoundTxn.wait();
         } catch (error: any) {
             window.alert('Error!' + (error && error.message ? `\n\n${error.message}` : ''));
@@ -194,20 +196,41 @@ export function Blackjack(): ReactElement {
         }
     }
 
+    const handleIncreaseBet = () => {
+        if(bet + 1 <= maxBet) {
+            const newBet = bet + 1;
+            setBet(newBet);
+        }
+    }
+
+    const handleDecreaseBet = () => {
+        if(bet - 1 >= minBet) {
+            const newBet = bet - 1;
+            setBet(newBet);
+        }
+    }
+
     return (
         <div>
             <h1>Blackjack Page</h1>
+            <h3>Total Bet: {bet}</h3>
             {!inProgress ? 
-                <button
-                    disabled={!active || !blackjackContract ? true : false}
-                    style={{
-                        cursor: !active || !blackjackContract ? 'not-allowed' : 'pointer',
-                        borderColor: !active || !blackjackContract ? 'unset' : 'blue'
-                    }}
-                    onClick={handlePlayRound}
-                >
-                    Play Round
-                </button>
+                <div>
+                    <div>
+                        {bet > minBet ? <button className="game-btn btn-dec" onClick={handleDecreaseBet}>↓</button> : <></>}
+                        {bet < maxBet ? <button className="game-btn btn-inc" onClick={handleIncreaseBet}>↑</button> : <></>}
+                    </div>
+                    <button
+                        disabled={!active || !blackjackContract ? true : false}
+                        style={{
+                            cursor: !active || !blackjackContract ? 'not-allowed' : 'pointer',
+                            borderColor: !active || !blackjackContract ? 'unset' : 'blue'
+                        }}
+                        onClick={handlePlayRound}
+                    >
+                        Play Round
+                    </button>
+                </div>
             : <></>
             }
             {playerTurn ? 

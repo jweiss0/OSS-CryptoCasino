@@ -44,6 +44,8 @@ async function main() {
     // Set values in Blackjack contract
     await dBlackjack.setCasinoContractAddress(dCasino.address);
     await dBlackjack.setChipContractAddress(dChip.address);
+    await dBlackjack.setMinimumBet("1000000000000000000");
+    await dBlackjack.setMaximumBet("50000000000000000000")
     console.log("Set initial state values for Blackjack contract");
 }
 
