@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { WalletConnector } from "../components/WalletConnector";
+import { ClaimChips } from "../components/ClaimChips";
 
 export const LandingPage = () => {
   return (
@@ -23,6 +25,8 @@ export const LandingPage = () => {
           Play Roulette 🎲
         </Link>
       </div>
+      <WalletConnector/>
+      <ClaimChips/>
     </main>
   );
 };

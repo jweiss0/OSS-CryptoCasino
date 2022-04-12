@@ -6,25 +6,52 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
+    // Hardhat always runs the compile task when running scripts with its command
+    // line interface.
+    //
+    // If this script is run directly using `node` you may want to call compile
+    // manually to make sure everything is compiled
+    // await hre.run('compile');
 
-  // We get the contract to deploy
-  const Greeter = await ethers.getContractFactory("Greeter");
-  const greeter = await Greeter.deploy("Hello, Hardhat!");
+    //  Deploy Chip contract
+    const fChip = await ethers.getContractFactory("Chip");
+    const dChip = await fChip.deploy();
+    await dChip.deployed();
+    console.log("Chip deployed to:", dChip.address);
 
-  await greeter.deployed();
+    // Deploy Casino contract
+    const fCasino = await ethers.getContractFactory("Casino");
+    const dCasino = await fCasino.deploy();
+    await dCasino.deployed();
+    console.log("Casino deployed to:", dCasino.address);
 
-  console.log("Greeter deployed to:", greeter.address);
+    // Deploy Blackjack contract
+    const fBlackjack = await ethers.getContractFactory("Blackjack");
+    const dBlackjack = await fBlackjack.deploy("1000000000000000000", "50000000000000000000", 4); // minbet 1 in wei, maxbet 50 in wei
+    await dBlackjack.deployed();
+    console.log("Blackjack deployed to:", dBlackjack.address);
+    console.log("Set initial min and max bets for Blackjack contract");
+
+    // Set values in Chip contract
+    await dChip.setCasinoAddress(dCasino.address);
+    console.log("Set initial state values for Chip contract");
+    
+    // Set values in Casino contract
+    await dCasino.setChipContractAddress(dChip.address);
+    await dCasino.addCasinoGameContractAddress(dBlackjack.address);
+    console.log("Set initial state values for Casino contract");
+
+    // Set values in Blackjack contract
+    await dBlackjack.setCasinoContractAddress(dCasino.address);
+    await dBlackjack.setChipContractAddress(dChip.address);
+    await dBlackjack.setMinimumBet("1000000000000000000");
+    await dBlackjack.setMaximumBet("50000000000000000000")
+    console.log("Set initial state values for Blackjack contract");
 }
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
+    console.error(error);
+    process.exitCode = 1;
 });

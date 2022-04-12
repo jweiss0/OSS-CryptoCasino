@@ -1,0 +1,12 @@
+.game-btn {
+    color: white;
+    font-family: "Righteous", cursive;
+}
+
+.btn-dec {
+    background-color: #D3455B;
+}
+
+.btn-inc {
+    background-color: #207868;
+}
