@@ -17,7 +17,7 @@ interface ChipInterface {
 *  and functions that all casino games must have. More game-specific
 *  variables and functions will be defined in subclasses that inherit it.
 */
-contract CasinoGame is Ownable {
+abstract contract CasinoGame is Ownable {
 
     // State variables
     CasinoInterface private casinoContract;
@@ -29,6 +29,12 @@ contract CasinoGame is Ownable {
     // Events (to be emitted)
     event ContractPaid(address player, uint256 amount);
     event RewardPaid(address player, uint256 amount);
+
+    // Constructor for initial state values
+    constructor(uint256 _minBet, uint256 _maxBet) {
+        minimumBet = _minBet;
+        maximumBet = _maxBet;
+    }
 
     // Sets the address of the Casino contract.
     function setCasinoContractAddress(address _address) external onlyOwner {
@@ -58,11 +64,12 @@ contract CasinoGame is Ownable {
         roundInProgress[_address] = _isPlaying;
     }
 
-    // Gets the minimum bet required.
-    function getMinimumBet() external view returns (uint256) { return minimumBet; }
-
-    // Gets the maximum bet required.
-    function getMaximumBet() external view returns (uint256) { return maximumBet; }
+    // Getters
+    function getCasinoContractAddress() public view returns (address) {return address(casinoContract);}
+    function getChipContractAddress() public view returns (address) {return address(chipContract);}
+    function getMinimumBet() public view returns (uint256) {return minimumBet;}
+    function getMaximumBet() public view returns (uint256) {return maximumBet;}
+    function getRoundInProgress(address _address) public view returns (bool) {return roundInProgress[_address];}
 
     // Rewards the user for the specified amount if they have won
     // anything from a casino game. Uses the Casino contract's payWinnings
@@ -74,9 +81,8 @@ contract CasinoGame is Ownable {
     }
 
     // Allows a user to place a bet by paying the contract the specified amount.
-    function payContract(address _address, uint256 _amount) internal  {
+    function payContract(address _address, uint256 _amount) internal {
         require(chipContract.balanceOf(_address) >= _amount, "Not enough tokens.");
-        // chipContract.casinoTransferFrom(_address, address(casinoContract), _amount);
         casinoContract.transferFrom(_address, _amount);
         emit ContractPaid(_address, _amount);
     }

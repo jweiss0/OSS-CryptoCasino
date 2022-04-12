@@ -6,7 +6,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 interface ChipInterface {
     function balanceOf(address account) external view returns (uint256);
     function casinoMint(address to, uint256 amount) external;
-    function casinoTransferFrom(address _from, address _to, uint256 _value) external returns (bool success);
+    function casinoTransferFrom(address _from, address _to, uint256 _value) external;
+    function casinoPayout(address _from, address _to, uint256 _value) external;
 }
 
 /* The Casino contract defines top-level Casino-related transactions that occur
@@ -18,7 +19,7 @@ contract Casino is Ownable {
 
     // State variables
     ChipInterface private chipContract;
-    address private deployerAddress;
+    // address private deployerAddress;
     address[] private casinoGameAddresses;
     mapping (address => bool) private freeTokensClaimed;
 
@@ -33,11 +34,6 @@ contract Casino is Ownable {
         }
         require(isAddr, "Caller must be CasinoGame.");
         _;
-    }
-
-    // Sets the address of the deployer wallet
-    function setDeployerAddress(address _address) external onlyOwner {
-        deployerAddress = _address;
     }
 
     // Sets the address of the Chip utility token contract
@@ -68,15 +64,15 @@ contract Casino is Ownable {
     // Pays a certain amount of winnings to the specified address. If the Casino
     // contract does not have enough Chips, more are minted for the Casino.
     function payWinnings(address _to, uint256 _amount) external onlyCasinoGame {
-        if(chipContract.balanceOf(deployerAddress) <= _amount) {
-            chipContract.casinoMint(deployerAddress, _amount * 10);
+        if(chipContract.balanceOf(address(this)) <= _amount) {
+            chipContract.casinoMint(address(this), _amount * 10);
         }
-        chipContract.casinoTransferFrom(deployerAddress, _to, _amount);
+        chipContract.casinoPayout(address(this), _to, _amount);
     }
 
     // Takes a certain amount from the paying wallet and transfers it to
     // the casino contract.
     function transferFrom(address _from, uint256 _amount) external onlyCasinoGame {
-        chipContract.casinoTransferFrom(_from, deployerAddress, _amount);
+        chipContract.casinoTransferFrom(_from, address(this), _amount);
     }
 }

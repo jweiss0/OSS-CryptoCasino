@@ -13,7 +13,7 @@ async function main() {
     // manually to make sure everything is compiled
     // await hre.run('compile');
 
-    //  Deploy  Chip contract
+    //  Deploy Chip contract
     const fChip = await ethers.getContractFactory("Chip");
     const dChip = await fChip.deploy();
     await dChip.deployed();
@@ -27,9 +27,10 @@ async function main() {
 
     // Deploy Blackjack contract
     const fBlackjack = await ethers.getContractFactory("Blackjack");
-    const dBlackjack = await fBlackjack.deploy();
+    const dBlackjack = await fBlackjack.deploy("1000000000000000000", "50000000000000000000", 4); // minbet 1 in wei, maxbet 50 in wei
     await dBlackjack.deployed();
     console.log("Blackjack deployed to:", dBlackjack.address);
+    console.log("Set initial min and max bets for Blackjack contract");
 
     // Set values in Chip contract
     await dChip.setCasinoAddress(dCasino.address);
@@ -37,13 +38,15 @@ async function main() {
     
     // Set values in Casino contract
     await dCasino.setChipContractAddress(dChip.address);
-    await dCasino.setDeployerAddress(await dCasino.signer.getAddress());
     await dCasino.addCasinoGameContractAddress(dBlackjack.address);
     console.log("Set initial state values for Casino contract");
 
-    await dBlackjack.setMinimumBet(1);
-    await dBlackjack.setMaximumBet(500);
-    console.log("Set initial min and max bets for Blackjack contract");
+    // Set values in Blackjack contract
+    await dBlackjack.setCasinoContractAddress(dCasino.address);
+    await dBlackjack.setChipContractAddress(dChip.address);
+    await dBlackjack.setMinimumBet("1000000000000000000");
+    await dBlackjack.setMaximumBet("50000000000000000000")
+    console.log("Set initial state values for Blackjack contract");
 }
 
 // We recommend this pattern to be able to use async/await everywhere
