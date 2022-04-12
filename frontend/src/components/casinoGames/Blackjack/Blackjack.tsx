@@ -24,6 +24,8 @@ export function Blackjack(): ReactElement {
     const [playerHand3, setPlayerHand3] = useState<BlackjackHand>();
     const [playerHand4, setPlayerHand4] = useState<BlackjackHand>();
     const [dealerHand, setDealerHand] = useState<BlackjackHand>();
+    const [roundResult, setRoundResult] = useState<number>(-1);
+    const [roundEnd, setRoundEnd] = useState<boolean>(false);
 
     // Get connected wallet information
     useEffect((): void => {
@@ -124,11 +126,11 @@ export function Blackjack(): ReactElement {
         console.log("Dealer has Blackjack!");
     }
     const roundResultEvent = (player: string, payout: string): void => {
-        console.log("Game has ended.");
-        console.log("Payout Original: " + payout);
-        console.log("Payout BigInt: " + BigInt(payout).toString());
-        console.log("Payout BigInt Div: " + (BigInt(payout) / BigInt("1000000000000000000")).toString());
-        setInProgress(false);
+        const roundRes = Number(BigInt(payout) / BigInt("1000000000000000000")).valueOf();
+        setRoundResult(roundRes);
+        // setPlayerTurn(false);
+        setRoundEnd(true);
+        console.log("Round result payout: " + roundRes);
     }
     useEffect((): () => void => {
         let wallet;
@@ -238,6 +240,19 @@ export function Blackjack(): ReactElement {
         }
     }
 
+    // Reset states
+    const handlePlayAgain = () => {
+        setInProgress(false);
+        setBet(minBet);
+        setPlayerHand1(undefined);
+        setPlayerHand2(undefined);
+        setPlayerHand3(undefined);
+        setPlayerHand4(undefined);
+        setDealerHand(undefined);
+        setRoundResult(-1);
+        setRoundEnd(false);
+    }
+
     return (
         <div>
             <h1>Blackjack Page</h1>
@@ -286,18 +301,24 @@ export function Blackjack(): ReactElement {
                 </div>
             : <></>
             }
-            <h4>Player Hand</h4>
-            {playerHand1 && playerHand1.cSuits && playerHand1.cVals ? 
+            {playerHand1 && inProgress ? <h4>Player Hand</h4> : <></>}
+            {playerHand1 && playerHand1.cSuits && playerHand1.cVals && inProgress ? 
                 playerHand1.cVals.map((cardVal, i) => {
                     return (<p key={i}>Card {i}: {cardVal} of {playerHand1.cSuits[i]}</p>);
                 })
                 : <></>}     
-            <h4>Dealer Hand</h4>
-            {dealerHand && dealerHand.cSuits && dealerHand.cVals ? 
+            {playerHand1 && inProgress ? <h4>Dealer Hand</h4> : <></>}
+            {dealerHand && dealerHand.cSuits && dealerHand.cVals && inProgress ? 
                 dealerHand.cVals.map((cardVal, i) => {
                     return (<p key={i}>Card {i}: {cardVal} of {dealerHand.cSuits[i]}</p>);
                 })
-                : <></>}                
+                : <></>}
+            {roundResult > -1 && roundEnd ?
+                <div>
+                    {roundResult > bet ? <span><h2>You Win! 🎉</h2><h3>{roundResult-bet} CHIPs</h3><p>(+{bet} back)</p></span> : roundResult < bet ? <h2>You Lose! 💸</h2> : <h2>Tie! 🤝</h2>}
+                    <button onClick={handlePlayAgain}>Play Again</button>
+                </div> : <></>
+            }
         </div>
     );
 }
