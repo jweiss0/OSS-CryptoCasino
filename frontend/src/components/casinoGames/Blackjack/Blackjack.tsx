@@ -23,6 +23,7 @@ export function Blackjack(): ReactElement {
     const [playerHand2, setPlayerHand2] = useState<BlackjackHand>();
     const [playerHand3, setPlayerHand3] = useState<BlackjackHand>();
     const [playerHand4, setPlayerHand4] = useState<BlackjackHand>();
+    const [dealerHand, setDealerHand] = useState<BlackjackHand>();
 
     // Get connected wallet information
     useEffect((): void => {
@@ -95,7 +96,7 @@ export function Blackjack(): ReactElement {
         console.log(player);
         console.log(amount);
     }
-    const playerCardsUpdatedEvent = (player: string, hand1: BlackjackHand, hand2: BlackjackHand, hand3: BlackjackHand, hand4: BlackjackHand): void => {
+    const playerCardsUpdatedEvent = (player: string, hand1: BlackjackHand, hand2: BlackjackHand, hand3: BlackjackHand, hand4: BlackjackHand, numHands: Number): void => {
         console.log("Player Cards Updated.");
         const newPlayerHand1: BlackjackHand = hand1;
         const newPlayerHand2: BlackjackHand = hand2;
@@ -105,10 +106,29 @@ export function Blackjack(): ReactElement {
         setPlayerHand2(newPlayerHand2);
         setPlayerHand3(newPlayerHand3);
         setPlayerHand4(newPlayerHand4);
+        console.log("Number of player hands: " + numHands);
+    }
+    const dealerCardsUpdatedEvent = (player: string, hand: BlackjackHand): void => {
+        console.log("Dealer Cards Updated.");
+        const newDealerHand: BlackjackHand = hand;
+        setDealerHand(newDealerHand);
     }
     const playerTurnEndEvent = (player: string): void => {
         console.log("Player Turn Ended.");
         setPlayerTurn(false);
+    }
+    const playerBlackjackEvent = (player: string): void => {
+        console.log("Player has Blackjack!");
+    }
+    const dealerBlackjackEvent = (player: string): void => {
+        console.log("Dealer has Blackjack!");
+    }
+    const roundResultEvent = (player: string, payout: string): void => {
+        console.log("Game has ended.");
+        console.log("Payout Original: " + payout);
+        console.log("Payout BigInt: " + BigInt(payout).toString());
+        console.log("Payout BigInt Div: " + (BigInt(payout) / BigInt("1000000000000000000")).toString());
+        setInProgress(false);
     }
     useEffect((): () => void => {
         let wallet;
@@ -122,12 +142,20 @@ export function Blackjack(): ReactElement {
         getWalletAddress();
         blackjackContract?.on(blackjackContract?.filters.ContractPaid(wallet, null), contractPaidEvent);
         blackjackContract?.on(blackjackContract?.filters.PlayerCardsUpdated(wallet, null, null, null, null), playerCardsUpdatedEvent);
+        blackjackContract?.on(blackjackContract?.filters.DealerCardsUpdated(wallet, null), dealerCardsUpdatedEvent);
         blackjackContract?.on(blackjackContract?.filters.PlayerTurnEnd(wallet), playerTurnEndEvent);
+        blackjackContract?.on(blackjackContract?.filters.PlayerBlackjack(wallet), playerBlackjackEvent);
+        blackjackContract?.on(blackjackContract?.filters.DealerBlackjack(wallet), dealerBlackjackEvent);
+        blackjackContract?.on(blackjackContract?.filters.RoundResult(wallet, null), roundResultEvent);
 
         return () => {
             blackjackContract?.off('ContractPaid', contractPaidEvent);
             blackjackContract?.off('PlayerCardsUpdated', playerCardsUpdatedEvent);
+            blackjackContract?.off('DealerCardsUpdated', dealerCardsUpdatedEvent);
             blackjackContract?.off('PlayerTurnEnd', playerTurnEndEvent);
+            blackjackContract?.off('PlayerBlackjack', playerBlackjackEvent);
+            blackjackContract?.off('DealerBlackjack', dealerBlackjackEvent);
+            blackjackContract?.off('RoundResult', roundResultEvent);
         };
     }, [blackjackContract, signer]);
 
@@ -258,10 +286,16 @@ export function Blackjack(): ReactElement {
                 </div>
             : <></>
             }
-            
+            <h4>Player Hand</h4>
             {playerHand1 && playerHand1.cSuits && playerHand1.cVals ? 
                 playerHand1.cVals.map((cardVal, i) => {
                     return (<p key={i}>Card {i}: {cardVal} of {playerHand1.cSuits[i]}</p>);
+                })
+                : <></>}     
+            <h4>Dealer Hand</h4>
+            {dealerHand && dealerHand.cSuits && dealerHand.cVals ? 
+                dealerHand.cVals.map((cardVal, i) => {
+                    return (<p key={i}>Card {i}: {cardVal} of {dealerHand.cSuits[i]}</p>);
                 })
                 : <></>}                
         </div>
