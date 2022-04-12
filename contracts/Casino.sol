@@ -7,6 +7,7 @@ interface ChipInterface {
     function balanceOf(address account) external view returns (uint256);
     function casinoMint(address to, uint256 amount) external;
     function casinoTransferFrom(address _from, address _to, uint256 _value) external;
+    function casinoPayout(address _from, address _to, uint256 _value) external;
 }
 
 /* The Casino contract defines top-level Casino-related transactions that occur
@@ -66,7 +67,7 @@ contract Casino is Ownable {
         if(chipContract.balanceOf(address(this)) <= _amount) {
             chipContract.casinoMint(address(this), _amount * 10);
         }
-        chipContract.casinoTransferFrom(address(this), _to, _amount);
+        chipContract.casinoPayout(address(this), _to, _amount);
     }
 
     // Takes a certain amount from the paying wallet and transfers it to

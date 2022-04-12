@@ -44,4 +44,10 @@ contract Chip is ERC20, Ownable {
     function casinoTransferFrom(address _from, address _to, uint256 _value) external onlyCasino {
         transferFrom(_from, _to, _value);
     }
+
+    // Allows the Casino contract to transfer tokens (pay out) to a user from the contract.
+    function casinoPayout(address _from, address _to, uint256 _value) external onlyCasino {
+        increaseAllowance(_from, _value);
+        transferFrom(_from, _to, _value);
+    }
 }

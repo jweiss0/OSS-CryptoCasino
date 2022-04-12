@@ -38,11 +38,13 @@ contract Blackjack is Ownable, CasinoGame {
 
     // Events (to be emitted)
     event NewRound(address player, uint256 initialBet);
-    event PlayerCardsUpdated(address player, BlackjackHand hand1, BlackjackHand hand2, BlackjackHand hand3, BlackjackHand hand4);
-    event DealerCardsUpdated(address player, BlackjackHand hand1, BlackjackHand hand2, BlackjackHand hand3, BlackjackHand hand4);
+    event PlayerCardsUpdated(address player, BlackjackHand hand1, BlackjackHand hand2, BlackjackHand hand3, BlackjackHand hand4, uint numHands);
+    event DealerCardsUpdated(address player, BlackjackHand hand);
     event PlayerBetUpdated(address player, uint256 newBet);
     event PlayerTurnEnd(address player);
-    event RoundResult(address player, uint256 payout, uint256 winAmount);
+    event PlayerBlackjack(address player);
+    event DealerBlackjack(address player);
+    event RoundResult(address player, uint256 payout);
 
     // Constructor for initial state values, including calling parent constructor
     constructor(uint256 _minBet, uint256 _maxBet, uint8 _numDecks) CasinoGame(_minBet, _maxBet) {
@@ -79,22 +81,28 @@ contract Blackjack is Ownable, CasinoGame {
         emit NewRound(msg.sender, _betAmount);
 
         // Handle initial dealing of cards
-        deal(msg.sender);
+        deal(msg.sender, _betAmount);
     }
 
     // ******* FOR TESTING PURPOSES *****
     function getHand(address _player) public view returns (string[] memory, string[] memory) {
         return (bjGames[_player].player.hands[0].cVals, bjGames[_player].player.hands[0].cSuits);
     }
+    function getDealerHand(address _player) public view returns (string[] memory, string[] memory) {
+        return (bjGames[_player].dealer.hands[0].cVals, bjGames[_player].dealer.hands[0].cSuits);
+    }
+    function getHighestHandVal(address _player) public view returns (uint16) {
+        return getHighestHandValue(bjGames[_player].player.hands[0]);
+    }
 
     // Emits the current hands for the round
     function emitRoundHands(address _player) external {
         emit PlayerCardsUpdated(_player, bjGames[_player].player.hands[0], bjGames[_player].player.hands[1],
-            bjGames[_player].player.hands[2], bjGames[_player].player.hands[3]);
-        emit DealerCardsUpdated(_player, bjGames[_player].dealer.hands[0], bjGames[_player].dealer.hands[1],
-            bjGames[_player].dealer.hands[2], bjGames[_player].dealer.hands[3]);
+            bjGames[_player].player.hands[2], bjGames[_player].player.hands[3], bjGames[_player].player.numHands);
+        emit DealerCardsUpdated(_player, bjGames[_player].dealer.hands[0]);
     }
 
+    // ************* PAYOUTS ARE CURRENTLY INCORRECT ************************
     // Handles the end of a blackjack round. It sets the isPlayingRound and gameInProgress
     // attributes to false. Then, it resets the BlackjackGame attributes.
     function endRound(address _playerAddress) public {
@@ -103,7 +111,6 @@ contract Blackjack is Ownable, CasinoGame {
         // Handle any payouts from the round based on player.totalbet
         BlackjackGame storage game = bjGames[_playerAddress];
         uint256 totalPayout = 0;
-        uint256 winAmount = 0;
 
         /* Non-split win rules:
             - if player has natural blackjack, they win an amount equivalent to 1.5*initial bet + initial bet back
@@ -148,19 +155,18 @@ contract Blackjack is Ownable, CasinoGame {
                     // Hand still in when dealer busts pays 1:1
                     totalPayout += hand.bet * 2;
                 }
-
             }
         }
 
         rewardUser(_playerAddress, totalPayout);
-        emit RoundResult(_playerAddress, totalPayout, winAmount);
+        emit RoundResult(_playerAddress, totalPayout);
 
         setRoundInProgress(_playerAddress, false);
         resetBJGame(_playerAddress);
     }
 
     // Handles the first deal of cards to player and dealer.
-    function deal(address _playerAddress) private {
+    function deal(address _playerAddress, uint256 _bet) private {
         require(roundInProgress[_playerAddress] == true, "Not playing round.");
         BlackjackGame storage game = bjGames[_playerAddress];
 
@@ -169,10 +175,8 @@ contract Blackjack is Ownable, CasinoGame {
         string[] memory pSuits; 
         string[] memory dVals; 
         string[] memory dSuits;
-        BlackjackHand memory playerHand = BlackjackHand(false, false, false, false, 0, pVals, pSuits);
+        BlackjackHand memory playerHand = BlackjackHand(false, false, false, false, _bet, pVals, pSuits);
         BlackjackHand memory dealerHand = BlackjackHand(false, false, false, false, 0, dVals, dSuits);
-        // game.player.hands.push(playerHand);
-        // game.dealer.hands.push(dealerHand);
         game.player.hands[game.player.numHands++] = playerHand;
         game.dealer.hands[game.dealer.numHands++] = dealerHand;
         dealSingleCard(game, game.player.hands[0]);
@@ -181,15 +185,17 @@ contract Blackjack is Ownable, CasinoGame {
         dealSingleCard(game, game.dealer.hands[0]);
 
         // Let front end know the player and dealer hands
-        emit PlayerCardsUpdated(_playerAddress, game.player.hands[0], game.player.hands[1], game.player.hands[2], game.player.hands[3]);
-        emit DealerCardsUpdated(_playerAddress, game.dealer.hands[0], game.dealer.hands[1], game.dealer.hands[2], game.dealer.hands[3]);
+        emit PlayerCardsUpdated(_playerAddress, game.player.hands[0], game.player.hands[1], game.player.hands[2], game.player.hands[3], game.player.numHands);
+        emit DealerCardsUpdated(_playerAddress, game.dealer.hands[0]);
 
         // Check if player has natural blackjack
-        if(hasBlackjack(game.player.hands[0]))
+        if(hasBlackjack(game.player.hands[0])) {
             game.player.hands[0].isBlackjack = true;
-            // Only a single player, so no need for dealer to continue playing after this
-        else if (hasBlackjack(game.dealer.hands[0]))
-            game.dealer.hands[0].isBlackjack = true;
+            emit PlayerBlackjack(_playerAddress);
+        } else if (hasBlackjack(game.dealer.hands[0])) {
+            game.dealer.hands[0].isBlackjack = true; // Only a single player, so no need for dealer to continue playing after this
+            emit DealerBlackjack(_playerAddress);
+        }
     }
 
     function doublePlayerBet(address _address, BlackjackGame storage _game, uint8 _handInd) private {
@@ -218,12 +224,8 @@ contract Blackjack is Ownable, CasinoGame {
         // Create new BlackjackHand to store second value
         string[] memory pVals2;
         string[] memory pSuits2; 
-        // BlackjackHand memory newHand2 = BlackjackHand(false, false, false, true, game.player.hands[_handInd].bet/2, pVals2, pSuits2);
 
         // Add new values and hand to hands array
-        // pVals2[0] = game.player.hands[_handInd].cVals[1];
-        // pSuits2[0] = game.player.hands[_handInd].cSuits[1];
-        // BlackjackHand storage newHand2 = game.player.hands.push();
         BlackjackHand storage newHand2 = game.player.hands[game.player.numHands++];
         newHand2.fromSplit = true;
         newHand2.bet = game.player.hands[_handInd].bet/2;
@@ -245,7 +247,7 @@ contract Blackjack is Ownable, CasinoGame {
         dealSingleCard(game, game.player.hands[_handInd+1]);
 
         emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.hands[0], bjGames[msg.sender].player.hands[1],
-            bjGames[msg.sender].player.hands[2], bjGames[msg.sender].player.hands[3]);
+            bjGames[msg.sender].player.hands[2], bjGames[msg.sender].player.hands[3], bjGames[msg.sender].player.numHands);
     }
 
     // Handles doubling down on a player's hand.
@@ -267,7 +269,7 @@ contract Blackjack is Ownable, CasinoGame {
         // Hit a single time, then end the player's turn
         hitPlayerAuto(msg.sender, handInd);
         emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.hands[0], bjGames[msg.sender].player.hands[1],
-            bjGames[msg.sender].player.hands[2], bjGames[msg.sender].player.hands[3]);
+            bjGames[msg.sender].player.hands[2], bjGames[msg.sender].player.hands[3], bjGames[msg.sender].player.numHands);
         endPlayerTurn(msg.sender);
     }
 
@@ -282,7 +284,7 @@ contract Blackjack is Ownable, CasinoGame {
 
         dealSingleCard(game, game.player.hands[handInd]);
         emit PlayerCardsUpdated(_playerAddress, bjGames[_playerAddress].player.hands[0], bjGames[_playerAddress].player.hands[1],
-            bjGames[_playerAddress].player.hands[2], bjGames[_playerAddress].player.hands[3]);
+            bjGames[_playerAddress].player.hands[2], bjGames[_playerAddress].player.hands[3], bjGames[_playerAddress].player.numHands);
 
         // Check if player has gone over 21
         uint32 handVal = getLowestHandValue(game.player.hands[handInd]);
@@ -303,12 +305,12 @@ contract Blackjack is Ownable, CasinoGame {
 
         dealSingleCard(game, game.player.hands[handInd]);
         emit PlayerCardsUpdated(msg.sender, bjGames[msg.sender].player.hands[0], bjGames[msg.sender].player.hands[1],
-            bjGames[msg.sender].player.hands[2], bjGames[msg.sender].player.hands[3]);
+            bjGames[msg.sender].player.hands[2], bjGames[msg.sender].player.hands[3],  bjGames[msg.sender].player.numHands);
 
         // Check if player has gone over 21
         uint32 handVal = getLowestHandValue(game.player.hands[handInd]);
         if(handVal  > 21) {
-           game.player.hands[handInd].isBust = true;
+            game.player.hands[handInd].isBust = true;
             endPlayerTurn(msg.sender);
         }
     }
@@ -338,12 +340,12 @@ contract Blackjack is Ownable, CasinoGame {
 
         // Dealer hits on soft 17
         // Dealer stands on 17 or above
-        while(!game.dealer.hands[0].isBust && getLowestHandValue(game.dealer.hands[0]) < 17) {
+        while(!game.dealer.hands[0].isBust && !game.dealer.hands[0].isBlackjack && getLowestHandValue(game.dealer.hands[0]) < 17) {
             hitDealer(_playerAddress, game);
             // Check if dealer has gone over 21 or has hit 21
             uint32 handVal = getLowestHandValue(game.dealer.hands[0]);
             if(handVal  > 21) {
-            game.dealer.hands[0].isBust = true;
+                game.dealer.hands[0].isBust = true;
             } else if(handVal >= 17) {
                 break;
             }
@@ -356,8 +358,7 @@ contract Blackjack is Ownable, CasinoGame {
     // Handles dealing another card to the dealer.
     function hitDealer(address _playerAddress, BlackjackGame storage game) private {
         dealSingleCard(game, game.dealer.hands[0]);
-        emit DealerCardsUpdated(_playerAddress, bjGames[_playerAddress].dealer.hands[0], bjGames[_playerAddress].dealer.hands[1],
-            bjGames[_playerAddress].dealer.hands[2], bjGames[_playerAddress].dealer.hands[3]);
+        emit DealerCardsUpdated(_playerAddress, bjGames[_playerAddress].dealer.hands[0]);
     }
 
     // Handles selecting and dealing a single card to the specified player.
@@ -452,25 +453,26 @@ contract Blackjack is Ownable, CasinoGame {
         return totalVal;
     }
     
-
-    // Returns the highest numerical value of a player's hand, trying to avoid going over 21.
+    // Returns the highest numerical value of a hand, trying to avoid going over 21.
     function getHighestHandValue(BlackjackHand memory _hand) private pure returns (uint16) {
         uint16 totalVal = 0;
-        uint8[] memory aces;
-        // First count non-Aces. Then, keep assuming 11 for Ace
-        // until it would cause a bust, in which case we then assume 1.
+        uint8 numAces = 0;
+        // First count non-Aces, keeping track of number of aces.
         for(uint i = 0; i < _hand.cVals.length; i++) {
             uint16 cardVal = getCardValue(_hand.cVals[i]);
-            if(cardVal == 0) 
-                aces[aces.length] = uint8(i);
-            else
+            if(cardVal == 0) {
+                numAces++;
+            } else
                 totalVal += cardVal;
         }
-        for(uint i = 0; i < aces.length; i++) {
-            if(totalVal + 11 <= 21)
-                totalVal += 11;
+        // For Aces, first assume each Ace is 1.
+        totalVal += (1 * numAces);
+        // Attempt to add another 10 for each Ace, to give each a total of 11 for each, without going over 21.
+        for(uint i = 0; i < numAces; i++) {
+            if(totalVal + 10 <= 21)
+                totalVal += 10;
             else
-                totalVal += 1;
+                break;
         }
         return totalVal;
     }
