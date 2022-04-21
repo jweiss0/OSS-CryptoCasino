@@ -60,10 +60,9 @@ contract Blackjack is Ownable, CasinoGame {
     // Getters
     function getNumDecks() public view returns (uint8) {return numDecks;}
 
-    // Handles the initial start of a blackjack round. It creates a new BlackjackGame with
-    // a new player and dealer. It also sets the isPlayingRound and gameInProgress attributes
-    // to true. Lastly, it handles the initial dealing of cards to the player and the dealer.
-    // function playRound(uint256 _betAmount, address _playerAddress) public {
+    // Handles the initial start of a blackjack round. First pays the initial bet
+    // to the contract, then sets the state of the round in progress to true.
+    // Finishes by calling the deal() function to begin the game.
     function playRound(uint256 _betAmount) external {
         // Only start the round if player is not in the middle of a game or an existing round.
         // Check that the paid bet is large enough.
@@ -102,8 +101,7 @@ contract Blackjack is Ownable, CasinoGame {
         emit DealerCardsUpdated(_player, bjGames[_player].dealer.hands[0]);
     }
 
-    // ************* PAYOUTS ARE CURRENTLY INCORRECT ************************
-    // Handles the end of a blackjack round. It sets the isPlayingRound and gameInProgress
+    // Handles the end of a blackjack round. It sets the roundInProgress
     // attributes to false. Then, it resets the BlackjackGame attributes.
     function endRound(address _playerAddress) public {
         require(roundInProgress[_playerAddress] == true, "Not playing round.");

@@ -32,6 +32,13 @@ async function main() {
     console.log("Blackjack deployed to:", dBlackjack.address);
     console.log("Set initial min and max bets for Blackjack contract");
 
+    // Deploy Roulette contract
+    const fRoulette = await ethers.getContractFactory("Roulette");
+    const dRoulette = await fRoulette.deploy("1000000000000000000", "50000000000000000000"); // minbet 1 in wei, maxbet 50 in wei
+    await dRoulette.deployed();
+    console.log("Roulette deployed to:", dRoulette.address);
+    console.log("Set initial min and max bets for Roulette contract");
+
     // Set values in Chip contract
     await dChip.setCasinoAddress(dCasino.address);
     console.log("Set initial state values for Chip contract");
@@ -47,6 +54,13 @@ async function main() {
     await dBlackjack.setMinimumBet("1000000000000000000");
     await dBlackjack.setMaximumBet("50000000000000000000")
     console.log("Set initial state values for Blackjack contract");
+
+    // Set values in Roulette contract
+    await dRoulette.setCasinoContractAddress(dCasino.address);
+    await dRoulette.setChipContractAddress(dChip.address);
+    await dRoulette.setMinimumBet("1000000000000000000");
+    await dRoulette.setMaximumBet("50000000000000000000")
+    console.log("Set initial state values for Roulette contract");
 }
 
 // We recommend this pattern to be able to use async/await everywhere
