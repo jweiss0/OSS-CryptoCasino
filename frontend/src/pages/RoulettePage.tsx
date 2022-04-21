@@ -84,7 +84,7 @@ export const RoulettePage = () => {
       .filter((v) => v !== 0);
 
     if (bets.length === 0) {
-      console.log("make a bet to play");
+      alert("You must make a bet to play the game!");
       return;
     }
 
@@ -98,37 +98,49 @@ export const RoulettePage = () => {
 
     if (roulette.zeros[0] !== 0) {
       if (data[prizeNumber].option === "0") {
-        win += 35 * roulette.zeros[0];
+        win += roulette.zeros[0] * (1 + 1 / 37);
+      } else {
+        win -= roulette.zeros[0];
       }
     }
 
     if (roulette.zeros[1] !== 0) {
       if (data[prizeNumber].option === "00") {
-        win += 35 * roulette.zeros[1];
+        win += roulette.zeros[1] * (1 + 1 / 37);
+      } else {
+        win -= roulette.zeros[1];
       }
     }
 
     if (roulette.oddEven[0] !== 0) {
       if (parseInt(data[prizeNumber].option) % 2 !== 0) {
-        win += 2 * roulette.oddEven[0];
+        win += roulette.oddEven[0] * (1 + (1 + 1 / 9));
+      } else {
+        win -= roulette.oddEven[0];
       }
     }
 
     if (roulette.oddEven[1] !== 0) {
       if (parseInt(data[prizeNumber].option) % 2 === 0) {
-        win += 2 * roulette.oddEven[1];
+        win += roulette.oddEven[1] * (1 + (1 + 1 / 9));
+      } else {
+        win -= roulette.oddEven[1];
       }
     }
 
     if (roulette.redBlack[0] !== 0) {
       if (data[prizeNumber].style.backgroundColor === "red") {
-        win += 2 * roulette.redBlack[0];
+        win += roulette.redBlack[0] * (1 + (1 + 1 / 9));
+      } else {
+        win -= roulette.redBlack[0];
       }
     }
 
     if (roulette.redBlack[1] !== 0) {
       if (data[prizeNumber].style.backgroundColor === "black") {
-        win += 2 * roulette.redBlack[1];
+        win += roulette.redBlack[1] * (1 + (1 + 1 / 9));
+      } else {
+        win -= roulette.redBlack[1];
       }
     }
 
@@ -137,7 +149,9 @@ export const RoulettePage = () => {
         parseInt(data[prizeNumber].option) > 18 &&
         parseInt(data[prizeNumber].option) < 37
       ) {
-        win += 2 * roulette.highLow[0];
+        win += roulette.highLow[0] * (1 + (1 + 1 / 9));
+      } else {
+        win -= roulette.highLow[0];
       }
     }
 
@@ -146,7 +160,9 @@ export const RoulettePage = () => {
         parseInt(data[prizeNumber].option) > 0 &&
         parseInt(data[prizeNumber].option) < 19
       ) {
-        win += 2 * roulette.highLow[1];
+        win += roulette.highLow[1] * (1 + (1 + 1 / 9));
+      } else {
+        win -= roulette.highLow[1];
       }
     }
 
@@ -155,7 +171,9 @@ export const RoulettePage = () => {
         parseInt(data[prizeNumber].option) > 0 &&
         parseInt(data[prizeNumber].option) < 13
       ) {
-        win += 2 * roulette.dozens[0];
+        win += roulette.dozens[0] * (1 + (2 + 1 / 6));
+      } else {
+        win -= roulette.dozens[0];
       }
     }
 
@@ -164,7 +182,9 @@ export const RoulettePage = () => {
         parseInt(data[prizeNumber].option) > 12 &&
         parseInt(data[prizeNumber].option) < 25
       ) {
-        win += 3 * roulette.dozens[1];
+        win += roulette.dozens[1] * (1 + (2 + 1 / 6));
+      } else {
+        win -= roulette.dozens[1];
       }
     }
 
@@ -173,27 +193,31 @@ export const RoulettePage = () => {
         parseInt(data[prizeNumber].option) > 24 &&
         parseInt(data[prizeNumber].option) < 37
       ) {
-        win += 3 * roulette.dozens[2];
+        win += roulette.dozens[2] * (1 + (2 + 1 / 6));
+      } else {
+        win -= roulette.dozens[2];
       }
+    }
+
+    if (win !== 0) {
+      alert(`You've ${win < 0 ? "lost" : "won"} $${Math.abs(win).toFixed(2)}`);
     }
   };
 
   const handleStopSpinning = () => {
     setMustStartSpinning(false);
-    setPreviousWins((previousWins) =>
-      [
-        ...previousWins,
-        {
-          option: data[prizeNumber].option,
-          color: data[prizeNumber].style.backgroundColor,
-        },
-      ].slice(Math.max(0, previousWins.length - 19), previousWins.length + 1)
-    );
+    setPreviousWins((previousWins) => [
+      ...previousWins,
+      {
+        option: data[prizeNumber].option,
+        color: data[prizeNumber].style.backgroundColor,
+      },
+    ]);
 
     checkWins();
   };
 
-  const handleClicky = (value: number | string) => {
+  const handleNewBet = (value: number | string) => {
     switch (value) {
       case 0:
         roulette.setZeros((p) => [p[0] + 1, p[1]]);
@@ -526,13 +550,13 @@ export const RoulettePage = () => {
               <tr>
                 <td
                   className="p-2 border border-warning bg-success text-white"
-                  onClick={() => handleClicky(0)}
+                  onClick={() => handleNewBet(0)}
                 >
                   0
                 </td>
                 <td
                   className="p-2 border border-warning bg-success text-white"
-                  onClick={() => handleClicky("00")}
+                  onClick={() => handleNewBet("00")}
                 >
                   00
                 </td>
@@ -540,13 +564,13 @@ export const RoulettePage = () => {
               <tr>
                 <td
                   className="p-2 border border-warning bg-black text-white"
-                  onClick={() => handleClicky("odds")}
+                  onClick={() => handleNewBet("odds")}
                 >
                   odds
                 </td>
                 <td
                   className="p-2 border border-warning bg-danger text-white"
-                  onClick={() => handleClicky("evens")}
+                  onClick={() => handleNewBet("evens")}
                 >
                   evens
                 </td>
@@ -554,13 +578,13 @@ export const RoulettePage = () => {
               <tr>
                 <td
                   className="p-2 border border-warning bg-danger text-white"
-                  onClick={() => handleClicky("reds")}
+                  onClick={() => handleNewBet("reds")}
                 >
                   reds
                 </td>
                 <td
                   className="p-2 border border-warning bg-black text-white"
-                  onClick={() => handleClicky("blacks")}
+                  onClick={() => handleNewBet("blacks")}
                 >
                   blacks
                 </td>
@@ -568,13 +592,13 @@ export const RoulettePage = () => {
               <tr>
                 <td
                   className="p-2 border border-warning border-bottom-0 bg-black text-white"
-                  onClick={() => handleClicky("1st 18")}
+                  onClick={() => handleNewBet("1st 18")}
                 >
                   1 to 18
                 </td>
                 <td
                   className="p-2 border border-warning border-bottom-0 bg-danger text-white"
-                  onClick={() => handleClicky("2nd 18")}
+                  onClick={() => handleNewBet("2nd 18")}
                 >
                   19 to 36
                 </td>
@@ -586,19 +610,19 @@ export const RoulettePage = () => {
               <tr>
                 <td
                   className="p-2 border border-warning bg-black text-white"
-                  onClick={() => handleClicky("1st 12")}
+                  onClick={() => handleNewBet("1st 12")}
                 >
                   1st 12
                 </td>
                 <td
                   className="p-2 border border-warning bg-danger text-white"
-                  onClick={() => handleClicky("2nd 12")}
+                  onClick={() => handleNewBet("2nd 12")}
                 >
                   2nd 12
                 </td>
                 <td
                   className="p-2 border border-warning bg-black text-white"
-                  onClick={() => handleClicky("3rd 12")}
+                  onClick={() => handleNewBet("3rd 12")}
                 >
                   3rd 12
                 </td>
@@ -609,7 +633,7 @@ export const RoulettePage = () => {
                     className={`p-2 border border-warning text-white ${
                       i % 2 === 0 ? "bg-danger" : "bg-black"
                     }`}
-                    onClick={() => handleClicky(i * 3 + 1)}
+                    onClick={() => handleNewBet(i * 3 + 1)}
                   >
                     {i * 3 + 1}
                   </td>
@@ -617,7 +641,7 @@ export const RoulettePage = () => {
                     className={`p-2 border border-warning text-white ${
                       (i + 1) % 2 === 0 ? "bg-danger" : "bg-black"
                     }`}
-                    onClick={() => handleClicky(i * 3 + 2)}
+                    onClick={() => handleNewBet(i * 3 + 2)}
                   >
                     {i * 3 + 2}
                   </td>
@@ -625,7 +649,7 @@ export const RoulettePage = () => {
                     className={`p-2 border border-warning text-white ${
                       (i + 2) % 2 === 0 ? "bg-danger" : "bg-black"
                     }`}
-                    onClick={() => handleClicky(i * 3 + 3)}
+                    onClick={() => handleNewBet(i * 3 + 3)}
                   >
                     {i * 3 + 3}
                   </td>
