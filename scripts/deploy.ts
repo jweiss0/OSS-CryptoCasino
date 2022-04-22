@@ -27,14 +27,14 @@ async function main() {
 
     // Deploy Blackjack contract
     const fBlackjack = await ethers.getContractFactory("Blackjack");
-    const dBlackjack = await fBlackjack.deploy("1000000000000000000", "50000000000000000000", 4); // minbet 1 in wei, maxbet 50 in wei
+    const dBlackjack = await fBlackjack.deploy(ethers.utils.parseEther("1"), ethers.utils.parseEther("50"), 4); // minbet 1 in wei, maxbet 50 in wei
     await dBlackjack.deployed();
     console.log("Blackjack deployed to:", dBlackjack.address);
     console.log("Set initial min and max bets for Blackjack contract");
 
     // Deploy Roulette contract
     const fRoulette = await ethers.getContractFactory("Roulette");
-    const dRoulette = await fRoulette.deploy("1000000000000000000", "50000000000000000000"); // minbet 1 in wei, maxbet 50 in wei
+    const dRoulette = await fRoulette.deploy(ethers.utils.parseEther("1"), ethers.utils.parseEther("50")); // minbet 1 in wei, maxbet 50 in wei
     await dRoulette.deployed();
     console.log("Roulette deployed to:", dRoulette.address);
     console.log("Set initial min and max bets for Roulette contract");
@@ -51,15 +51,15 @@ async function main() {
     // Set values in Blackjack contract
     await dBlackjack.setCasinoContractAddress(dCasino.address);
     await dBlackjack.setChipContractAddress(dChip.address);
-    await dBlackjack.setMinimumBet("1000000000000000000");
-    await dBlackjack.setMaximumBet("50000000000000000000")
+    await dBlackjack.setMinimumBet(ethers.utils.parseEther("1"));
+    await dBlackjack.setMaximumBet(ethers.utils.parseEther("50"))
     console.log("Set initial state values for Blackjack contract");
 
     // Set values in Roulette contract
     await dRoulette.setCasinoContractAddress(dCasino.address);
     await dRoulette.setChipContractAddress(dChip.address);
-    await dRoulette.setMinimumBet("1000000000000000000");
-    await dRoulette.setMaximumBet("50000000000000000000")
+    await dRoulette.setMinimumBet(ethers.utils.parseEther("1"));
+    await dRoulette.setMaximumBet(ethers.utils.parseEther("50"))
     console.log("Set initial state values for Roulette contract");
 }
 
