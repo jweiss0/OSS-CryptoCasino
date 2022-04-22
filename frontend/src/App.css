@@ -4,6 +4,10 @@ body {
   background-color: rgb(247, 247, 255);
 }
 
+td {
+  cursor: pointer;
+}
+
 .brand {
   font-family: "Righteous", cursive;
 }
@@ -22,6 +26,24 @@ body {
   font-family: "Righteous", cursive;
   font-size: 1.5rem;
   margin-bottom: 1rem;
+}
+
+.bet {
+  color: black;
+  display: inline;
+  margin-right: 1rem;
+  font-weight: bold;
+}
+
+.old-result {
+  color: white;
+  padding: 0.5rem;
+  border-radius: 5px;
+  width: 40px;
+  text-align: center;
+  display: inline;
+  margin-right: 1rem;
+  font-weight: bold;
 }
 
 /* sm */
