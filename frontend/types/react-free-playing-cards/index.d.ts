@@ -1,0 +1,1 @@
+declare module 'react-free-playing-cards/lib/TcN';

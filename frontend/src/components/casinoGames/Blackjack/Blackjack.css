@@ -1,3 +1,8 @@
+.blackjack-page {
+    padding-top: 100px;
+    padding-bottom: 100px;
+}
+
 .game-btn {
     color: white;
     font-family: "Righteous", cursive;
@@ -9,4 +14,14 @@
 
 .btn-inc {
     background-color: #207868;
+}
+
+.card-list {
+    position: relative;
+    display: flex;
+}
+
+.card {
+    display: inline-block;
+    height: 200px;
 }
