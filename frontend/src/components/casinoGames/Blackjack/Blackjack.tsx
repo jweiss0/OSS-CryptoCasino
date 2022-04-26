@@ -6,6 +6,7 @@ import BlackjackArtifacts from '../../../artifacts/contracts/Blackjack.sol/Black
 import ChipArtifacts from '../../../artifacts/contracts/Chip.sol/Chip.json';
 import { Provider } from '../../../utils/provider';
 import { BlackjackHand } from '../../../utils/types';
+import Card from "react-free-playing-cards/lib/TcN";
 import './Blackjack.css';
 
 export function Blackjack(): ReactElement {
@@ -108,12 +109,13 @@ export function Blackjack(): ReactElement {
         setPlayerHand2(newPlayerHand2);
         setPlayerHand3(newPlayerHand3);
         setPlayerHand4(newPlayerHand4);
-        console.log("Number of player hands: " + numHands);
+        console.log(newPlayerHand1);
     }
     const dealerCardsUpdatedEvent = (player: string, hand: BlackjackHand): void => {
         console.log("Dealer Cards Updated.");
         const newDealerHand: BlackjackHand = hand;
         setDealerHand(newDealerHand);
+        console.log(newDealerHand);
     }
     const playerTurnEndEvent = (player: string): void => {
         console.log("Player Turn Ended.");
@@ -254,8 +256,7 @@ export function Blackjack(): ReactElement {
     }
 
     return (
-        <div>
-            <h1>Blackjack Page</h1>
+        <div className="blackjack-page">
             <h3>Total Bet: {bet}</h3>
             {!inProgress ? 
                 <div>
@@ -301,18 +302,26 @@ export function Blackjack(): ReactElement {
                 </div>
             : <></>
             }
+
             {playerHand1 && inProgress ? <h4>Player Hand</h4> : <></>}
-            {playerHand1 && playerHand1.cSuits && playerHand1.cVals && inProgress ? 
-                playerHand1.cVals.map((cardVal, i) => {
-                    return (<p key={i}>Card {i}: {cardVal} of {playerHand1.cSuits[i]}</p>);
-                })
-                : <></>}     
+            <div className="card-list">
+                {playerHand1 && playerHand1.cSuits && playerHand1.cVals && inProgress ? 
+                    playerHand1.cVals.map((cardVal, i) => {
+                        return (<Card key={i} height="200px" card={(cardVal === "10" ? "T" : cardVal)+playerHand1.cSuits[i].charAt(0).toLowerCase()}/>)
+                    })
+                    : <></>}   
+            </div>
+            <br/>
             {playerHand1 && inProgress ? <h4>Dealer Hand</h4> : <></>}
-            {dealerHand && dealerHand.cSuits && dealerHand.cVals && inProgress ? 
-                dealerHand.cVals.map((cardVal, i) => {
-                    return (<p key={i}>Card {i}: {cardVal} of {dealerHand.cSuits[i]}</p>);
-                })
-                : <></>}
+            <div className="card-list">
+                {dealerHand && dealerHand.cSuits && dealerHand.cVals && inProgress ? 
+                    dealerHand.cVals.map((cardVal, i) => {
+                        return (<Card key={i} height="200px" card={(cardVal === "10" ? "T" : cardVal)+dealerHand.cSuits[i].charAt(0).toLowerCase()} 
+                                    back={i === 0 && !(roundResult > -1 && roundEnd)}/>)
+                    })
+                    : <></>}
+            </div>
+
             {roundResult > -1 && roundEnd ?
                 <div>
                     {roundResult > bet ? <span><h2>You Win! 🎉</h2><h3>{roundResult-bet} CHIPs</h3><p>(+{bet} back)</p></span> : roundResult < bet ? <h2>You Lose! 💸</h2> : <h2>Tie! 🤝</h2>}
