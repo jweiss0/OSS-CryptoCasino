@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Wheel } from "react-custom-roulette";
 import { useRoulette } from "../hooks/useRoulette";
+import Footer from './../components/ui/footer';
+
 
 const numbers = [
   "00",
@@ -410,7 +412,10 @@ export const RoulettePage = () => {
           ))}
         </tbody>
       </table>
+      <Footer />
     </div>
+
+
   );
 };
 
