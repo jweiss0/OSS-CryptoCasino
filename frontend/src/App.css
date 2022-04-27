@@ -56,6 +56,7 @@ body {
   left: 0;
   width: 100%;
   font-size: 12px;
+
 }
 
 
@@ -65,4 +66,44 @@ body {
   padding-left: 5px;
   padding-right: 5px;
 
+}
+
+#flyoutMenu {
+  width: 15vw;
+  height: 100vh;
+  background-color: rgb(247, 247, 255);
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  transition: transform .6s ease;
+  overflow: scroll;
+  z-index: 1000;
+  box-shadow: -2px 0px darkgrey;
+
+}
+
+#flyoutMenu.hide {
+  transform: translate3d(100vw, 0, 0);
+}
+
+#flyoutMenu.show {
+  transform: translate3d(85vw, 0, 0);
+  overflow: hidden;
+}
+
+#flyoutMenu h2 a {
+  color: #333;
+  margin-left: 15px;
+  text-decoration: none;
+}
+
+#flyoutMenu h2 a:hover {
+  text-decoration: underline;
+}
+
+#settingsIcon {
+  position: fixed;
+  top: 20px;
+  right: 20px;
 }
